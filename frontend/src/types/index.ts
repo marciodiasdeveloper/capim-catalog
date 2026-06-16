@@ -82,6 +82,8 @@ export interface Order {
   subtotal: number;
   frete: number;
   total: number;
+  /** Pontos de gamificação ganhos no pedido. */
+  points: number;
   createdAtISO: string;
 }
 

@@ -93,3 +93,15 @@ export function currentMonthLabel(): string {
   }).format(new Date());
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
+
+const intFmt = new Intl.NumberFormat("pt-BR");
+
+/** Inteiro com separador de milhar pt-BR (ex.: 1450 → "1.450"). */
+export function formatInt(value: number): string {
+  return intFmt.format(Math.round(value));
+}
+
+/** Contagem com plural pt-BR (ex.: pluralize(1, "pedido", "pedidos") → "1 pedido"). */
+export function pluralize(n: number, singular: string, plural: string): string {
+  return `${formatInt(n)} ${n === 1 ? singular : plural}`;
+}

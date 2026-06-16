@@ -9,6 +9,16 @@ export interface CepAddress {
   uf: string;
 }
 
+/** Forma (parcial) da resposta JSON do ViaCEP que consumimos. */
+interface ViaCepResponse {
+  logradouro?: string;
+  bairro?: string;
+  localidade?: string;
+  uf?: string;
+  /** Presente (true/"true") quando o CEP não existe. */
+  erro?: boolean | string;
+}
+
 /** Consulta o ViaCEP. Retorna null para CEP incompleto, inexistente ou falha de rede. */
 export async function lookupCep(
   cep: string,
@@ -19,7 +29,7 @@ export async function lookupCep(
   try {
     const res = await fetch(`https://viacep.com.br/ws/${d}/json/`, { signal });
     if (!res.ok) return null;
-    const data = await res.json();
+    const data = (await res.json()) as ViaCepResponse | null;
     if (!data || data.erro) return null;
     return {
       rua: data.logradouro ?? "",

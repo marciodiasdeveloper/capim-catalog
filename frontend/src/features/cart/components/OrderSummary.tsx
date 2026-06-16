@@ -151,6 +151,8 @@ export function OrderSummary() {
           <dd>
             {!selectedDelivery ? (
               <span className="text-muted-foreground">—</span>
+            ) : selectedDelivery.price === 0 ? (
+              <span className="text-muted-foreground">Sem frete</span>
             ) : frete === 0 ? (
               <span className="text-success">Grátis</span>
             ) : (

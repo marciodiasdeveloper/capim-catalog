@@ -34,6 +34,7 @@ export function Header() {
             <Link
               key={href}
               href={href}
+              aria-current={pathname === href ? "page" : undefined}
               className={cn(
                 "text-muted-foreground hover:bg-muted hover:text-foreground inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                 pathname === href && "bg-muted text-foreground"
@@ -48,13 +49,16 @@ export function Header() {
 
           <Link
             href="/#resumo"
-            aria-label="Ver resumo do pedido"
+            aria-label={
+              count > 0 ? `Ver resumo do pedido (${count} itens)` : "Ver resumo do pedido"
+            }
             className="text-muted-foreground hover:bg-muted hover:text-foreground relative inline-flex items-center rounded-lg px-3 py-1.5 transition-colors"
           >
             <ShoppingCart className="size-4" />
             {count > 0 && (
               <span
                 key={count}
+                aria-hidden="true"
                 className="bg-primary text-primary-foreground animate-in zoom-in-50 absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold tabular-nums duration-300"
               >
                 {count}

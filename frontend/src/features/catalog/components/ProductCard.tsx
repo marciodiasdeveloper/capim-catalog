@@ -1,7 +1,8 @@
 "use client";
 
+import { memo } from "react";
+
 import type { Category, Product } from "@/types";
-import { useCart } from "@/features/cart/useCart";
 import { getUnitPrice } from "@/lib/pricing";
 import { formatBRL } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,12 +14,22 @@ import { ProductThumb } from "./ProductThumb";
 interface ProductCardProps {
   product: Product;
   category: Category;
+  qty: number;
+  onSetQty: (productId: string, qty: number) => void;
 }
 
-export function ProductCard({ product, category }: ProductCardProps) {
-  const { quantities, setQty } = useCart();
-  const qty = quantities[product.id] ?? 0;
-
+/**
+ * Card de produto — apresentacional (recebe `qty` + setter por props) e
+ * memoizado: só re-renderiza quando a SUA quantidade muda, não a de outros
+ * produtos. A assinatura por props (em vez de `useCart()` interno) é o que
+ * torna o `memo` efetivo e evita o re-render de toda a lista.
+ */
+export const ProductCard = memo(function ProductCard({
+  product,
+  category,
+  qty,
+  onSetQty,
+}: ProductCardProps) {
   const { price, isWholesale } = getUnitPrice(product, qty);
   const tiersLabel = product.tiers
     ?.map((t) => `${t.minQty}+ ${formatBRL(t.price)}`)
@@ -27,11 +38,11 @@ export function ProductCard({ product, category }: ProductCardProps) {
   // Garante 0 ou >= minQty: ao adicionar do zero, salta para o mínimo; ao
   // reduzir abaixo do mínimo, zera (remove do pedido).
   function handleQtyChange(next: number) {
-    if (next <= 0) return setQty(product.id, 0);
+    if (next <= 0) return onSetQty(product.id, 0);
     if (next < product.minQty) {
-      return setQty(product.id, qty === 0 ? product.minQty : 0);
+      return onSetQty(product.id, qty === 0 ? product.minQty : 0);
     }
-    setQty(product.id, next);
+    onSetQty(product.id, next);
   }
 
   return (
@@ -93,4 +104,4 @@ export function ProductCard({ product, category }: ProductCardProps) {
       </CardContent>
     </Card>
   );
-}
+});

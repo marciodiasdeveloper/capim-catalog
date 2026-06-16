@@ -18,7 +18,7 @@ export interface Company {
 }
 
 export const COMPANY: Company = {
-  name: "Capim Farma",
+  name: "Capim Catalog",
   tagline: "Sua farmácia de bairro, agora online",
   whatsapp: "553799447506",
   atendente: "Equipe Capim",

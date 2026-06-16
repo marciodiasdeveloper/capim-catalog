@@ -8,6 +8,8 @@ import { useCart } from "@/features/cart/useCart";
 import { COMPANY } from "@/data/company";
 import { buildOrderMessage, buildWaLink } from "@/lib/whatsapp";
 import { celebrate } from "@/lib/confetti";
+import { formatInt } from "@/lib/format";
+import { FRETE_GRATIS_ACIMA } from "@/constants";
 import { Container } from "@/components/layout/Container";
 import { Money } from "@/components/ui/money";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -79,6 +81,15 @@ export function ConfirmationScreen() {
               className="text-foreground font-semibold"
             />
           </p>
+          {lastOrder.points > 0 && (
+            <p className="text-muted-foreground text-xs">
+              Você ganhou{" "}
+              <strong className="text-foreground">
+                {formatInt(lastOrder.points)}
+              </strong>{" "}
+              {lastOrder.points === 1 ? "ponto" : "pontos"} no ranking do mês 🎉
+            </p>
+          )}
         </div>
 
         <div
@@ -106,10 +117,12 @@ export function ConfirmationScreen() {
                 {lastOrder.delivery.label}
                 {lastOrder.delivery.eta && ` · ${lastOrder.delivery.eta}`}
               </span>
-              {lastOrder.frete === 0 ? (
+              {lastOrder.frete > 0 ? (
+                <Money value={lastOrder.frete} className="text-foreground shrink-0" />
+              ) : lastOrder.subtotal >= FRETE_GRATIS_ACIMA ? (
                 <span className="text-success shrink-0">Grátis</span>
               ) : (
-                <Money value={lastOrder.frete} className="text-foreground shrink-0" />
+                <span className="shrink-0">Sem frete</span>
               )}
             </div>
           )}

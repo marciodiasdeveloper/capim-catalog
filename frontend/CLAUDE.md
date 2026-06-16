@@ -17,10 +17,11 @@ pnpm dev               # dev server on http://localhost:3002 (note: NOT 3000)
 pnpm build             # next build
 pnpm lint              # eslint (flat config in eslint.config.mjs)
 pnpm seed              # tsx scripts/seed-supabase.ts — seed Supabase from src/data mocks
-pnpm exec tsc --noEmit # typecheck (there is no test runner; rely on this + lint)
+pnpm test              # unit tests (Vitest) — pure logic in src/lib + cart reducer
+pnpm exec tsc --noEmit # typecheck
 ```
 
-There are **no automated tests**. Verify changes with `pnpm exec tsc --noEmit`, `pnpm lint`, and manual checks against `http://localhost:3002`. A dev server is typically already running on 3002.
+Verify changes with `pnpm test` (Vitest suite covering `src/lib` pricing/format/validation/cep/whatsapp + the cart reducer), `pnpm exec tsc --noEmit`, `pnpm lint`, and manual checks against `http://localhost:3002`. A dev server is typically already running on 3002.
 
 Path alias: `@/*` → `./src/*`.
 

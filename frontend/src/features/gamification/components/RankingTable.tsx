@@ -1,4 +1,5 @@
 import type { RankedUser } from "@/data/ranking";
+import { formatInt } from "@/lib/format";
 import { medalFor } from "../medals";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import {
@@ -57,10 +58,10 @@ export function RankingTable({ users }: { users: RankedUser[] }) {
               </div>
             </TableCell>
             <TableCell className="text-right tabular-nums">
-              {user.pedidos}
+              {formatInt(user.pedidos)}
             </TableCell>
             <TableCell className="text-right font-semibold tabular-nums">
-              {user.pontos}
+              {formatInt(user.pontos)}
             </TableCell>
           </TableRow>
         ))}

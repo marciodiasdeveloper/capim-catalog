@@ -1,9 +1,12 @@
 /** Celebração com confetti (client-only). Respeita "reduzir movimento". */
 
-import confetti from "canvas-confetti";
-
-/** Uma rajada sutil de confetti, disparada na confirmação do pedido. */
-export function celebrate() {
+/**
+ * Dispara uma rajada sutil de confetti na confirmação do pedido. O
+ * `canvas-confetti` é carregado sob demanda (import dinâmico) para não pesar no
+ * bundle inicial da rota de confirmação.
+ */
+export async function celebrate(): Promise<void> {
+  const { default: confetti } = await import("canvas-confetti");
   confetti({
     particleCount: 90,
     spread: 75,

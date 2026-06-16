@@ -16,7 +16,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
       <Input
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Buscar produto pelo nome..."
+        placeholder="Buscar produto pelo nome…"
         className="h-10 pl-9"
         aria-label="Buscar produto"
       />

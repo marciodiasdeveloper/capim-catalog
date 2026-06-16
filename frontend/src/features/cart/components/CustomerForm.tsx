@@ -106,6 +106,7 @@ export function CustomerForm() {
       <FormField id="nome" label="Nome completo" error={errors.nome}>
         <Input
           id="nome"
+          autoComplete="name"
           value={customer.nome}
           onChange={(e) => patchCustomer({ nome: e.target.value })}
           placeholder="Seu nome"
@@ -117,6 +118,7 @@ export function CustomerForm() {
         <FormField id="cpf" label="CPF" error={errors.cpf}>
           <Input
             id="cpf"
+            autoComplete="off"
             value={customer.cpf}
             onChange={(e) => patchCustomer({ cpf: formatCpf(e.target.value) })}
             placeholder="000.000.000-00"
@@ -127,6 +129,7 @@ export function CustomerForm() {
         <FormField id="telefone" label="Telefone" error={errors.telefone}>
           <Input
             id="telefone"
+            autoComplete="tel"
             value={customer.telefone}
             onChange={(e) =>
               patchCustomer({ telefone: formatPhone(e.target.value) })
@@ -141,6 +144,7 @@ export function CustomerForm() {
       <FormField id="cep" label="CEP" error={errors.cep ?? cepError ?? undefined}>
         <Input
           id="cep"
+          autoComplete="postal-code"
           value={customer.cep}
           onChange={(e) => {
             const masked = formatCep(e.target.value);
@@ -153,7 +157,10 @@ export function CustomerForm() {
           aria-invalid={!!(errors.cep ?? cepError)}
         />
         {cepLoading && (
-          <p className="text-muted-foreground flex items-center gap-1.5 text-xs">
+          <p
+            aria-live="polite"
+            className="text-muted-foreground flex items-center gap-1.5 text-xs"
+          >
             <Loader2 className="size-3 animate-spin" />
             Buscando endereço…
           </p>
@@ -164,6 +171,7 @@ export function CustomerForm() {
         <FormField id="rua" label="Rua" error={errors.rua}>
           <Input
             id="rua"
+            autoComplete="address-line1"
             value={customer.rua}
             onChange={(e) => patchCustomer({ rua: e.target.value })}
             placeholder="Rua / Avenida"
@@ -194,9 +202,10 @@ export function CustomerForm() {
         <FormField id="complemento" label="Complemento">
           <Input
             id="complemento"
+            autoComplete="address-line2"
             value={customer.complemento}
             onChange={(e) => patchCustomer({ complemento: e.target.value })}
-            placeholder="Apto, bloco..."
+            placeholder="Apto, bloco…"
           />
         </FormField>
       </div>
@@ -204,6 +213,7 @@ export function CustomerForm() {
       <FormField id="cidade" label="Cidade" error={errors.cidade}>
         <Input
           id="cidade"
+          autoComplete="address-level2"
           value={customer.cidade}
           onChange={(e) => patchCustomer({ cidade: e.target.value })}
           placeholder="Cidade"
@@ -243,7 +253,7 @@ export function CustomerForm() {
         disabled={items.length === 0 || !consent || submitting}
         className="bg-success text-success-foreground hover:bg-success/90 w-full"
       >
-        <ShoppingBag /> {submitting ? "Enviando..." : "Finalizar pedido"}
+        <ShoppingBag /> {submitting ? "Enviando…" : "Finalizar pedido"}
       </Button>
 
       {items.length === 0 ? (

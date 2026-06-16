@@ -171,3 +171,16 @@
     display: none;
   }
 }
+
+/* Respeita "reduzir movimento" do SO: neutraliza animações e transições
+   (tw-animate-css `animate-in`, reveals, hovers) para quem é sensível. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -49,7 +49,10 @@ export function CatalogScreen({
           className="animate-in fade-in slide-in-from-bottom-2 min-w-0 space-y-4 duration-500"
           style={{ animationDelay: "100ms", animationFillMode: "both" }}
         >
-          <SectionTitle description="Adicione os produtos e finalize pelo WhatsApp.">
+          <SectionTitle
+            as="h1"
+            description="Adicione os produtos e finalize pelo WhatsApp."
+          >
             Monte seu pedido
           </SectionTitle>
 

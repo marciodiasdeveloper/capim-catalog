@@ -14,6 +14,9 @@ export const STORAGE_ORDER_SEQ_KEY = "capim:order-seq";
 /** Referência (UUID) do último pedido persistido, p/ destacar "você" no ranking. */
 export const STORAGE_ORDER_REF_KEY = "capim:order-ref";
 
+/** Número inicial da sequência local de pedidos (fallback sem Supabase). */
+export const ORDER_SEQ_START = 1279;
+
 /** Regras exibidas na seção "Como ganhar pontos". */
 export const POINT_RULES: { title: string; description: string }[] = [
   {

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight, Trophy } from "lucide-react";
 
 import type { RankedUser } from "@/data/ranking";
-import { currentMonthLabel, shortName } from "@/lib/format";
+import { currentMonthLabel, formatInt, shortName } from "@/lib/format";
 import { medalFor } from "../medals";
 import { MyRankStrip } from "./MyRankStrip";
 import { RankStrip } from "./RankStrip";
@@ -50,7 +50,7 @@ export function RankingBanner({ top, currentRank }: RankingBannerProps) {
                 <div className="hidden md:block">
                   <p className="text-xs font-medium">{shortName(user.name)}</p>
                   <p className="text-muted-foreground text-[11px] tabular-nums">
-                    {user.pontos} pts
+                    {formatInt(user.pontos)} pts
                   </p>
                 </div>
               </div>

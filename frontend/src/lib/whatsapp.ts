@@ -3,6 +3,13 @@
 import type { Order } from "@/types";
 import type { Company } from "@/data/company";
 import { formatBRL } from "./format";
+import { FRETE_GRATIS_ACIMA } from "@/constants";
+
+/** Rótulo do frete: valor, "Grátis" (acima do limite) ou "Sem frete" (retirada). */
+function freteLabel(order: Order): string {
+  if (order.frete > 0) return formatBRL(order.frete);
+  return order.subtotal >= FRETE_GRATIS_ACIMA ? "Grátis" : "Sem frete";
+}
 
 /** Monta o texto do pedido para envio no WhatsApp, espelhando o resumo da confirmação. */
 export function buildOrderMessage(order: Order, company: Company): string {
@@ -30,12 +37,11 @@ export function buildOrderMessage(order: Order, company: Company): string {
   }
 
   if (order.delivery) {
-    const valor = order.frete === 0 ? "Grátis" : formatBRL(order.frete);
-    lines.push(`*Entrega:* ${order.delivery.label} (${valor})`);
+    lines.push(`*Entrega:* ${order.delivery.label} (${freteLabel(order)})`);
   }
 
   lines.push(`*Subtotal:* ${formatBRL(order.subtotal)}`);
-  lines.push(`*Frete:* ${order.frete === 0 ? "Grátis" : formatBRL(order.frete)}`);
+  lines.push(`*Frete:* ${freteLabel(order)}`);
   lines.push(`*Total:* ${formatBRL(order.total)}`);
 
   if (c.observacao) lines.push(`*Obs.:* ${c.observacao}`);

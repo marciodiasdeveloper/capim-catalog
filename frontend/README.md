@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Capim Catalog — app (frontend)
 
-## Getting Started
+Aplicação **Next.js 16** do Capim Catalog: catálogo de atacado, monte o pedido e
+finalize pelo WhatsApp, com ranking de gamificação e painel administrativo.
+Toda a aplicação vive nesta pasta (`frontend/`).
 
-First, run the development server:
+> Documentação completa do projeto: **[`../README.md`](../README.md)**
+> (visão geral, arquitetura, regras de negócio, schema). Guia para contribuir/IA:
+> **[`CLAUDE.md`](./CLAUDE.md)** e **[`AGENTS.md`](./AGENTS.md)**. Banco:
+> **[`supabase/README.md`](./supabase/README.md)**.
+
+## Rodando
+
+Pré-requisito: **pnpm** (o projeto usa `pnpm-lock.yaml` — não use npm/npx).
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev      # http://localhost:3002   (porta 3002, NÃO 3000)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+O app roda **mock-first**: sem Supabase configurado, o catálogo funciona com os
+dados de `src/data/*`. Pedido persistido, ranking e `/admin` exigem Supabase —
+copie `.env.local.example` → `.env.local` e siga `supabase/README.md`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Comando | O que faz |
+| --- | --- |
+| `pnpm dev` | Servidor de desenvolvimento (porta 3002) |
+| `pnpm build` / `pnpm start` | Build de produção / servir |
+| `pnpm lint` | ESLint (flat config) |
+| `pnpm exec tsc --noEmit` | Checagem de tipos |
+| `pnpm test` | Testes unitários (Vitest) |
+| `pnpm test:watch` | Vitest em watch |
+| `pnpm test:cov` | Testes com cobertura |
+| `pnpm seed` | Popula o Supabase a partir dos mocks |
 
-## Learn More
+## Stack
 
-To learn more about Next.js, take a look at the following resources:
+Next.js 16 (App Router, **fork modificado** — ver `AGENTS.md`), React 19,
+TypeScript estrito, Tailwind v4 (tokens em `src/app/globals.css`, sem config),
+componentes **base-ui** (estilo shadcn em `src/components/ui`), Supabase
+(opcional), next-themes, sonner, lucide. Testes com Vitest.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Estrutura (resumo)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+  app/         rotas (site + admin)
+  screens/     telas que compõem features
+  features/    cart, catalog, gamification, order, admin
+  server/      leituras/ações Supabase (mock-first)
+  lib/         pricing, format, validation, cep, whatsapp (lógica pura, testada)
+  data/        catálogo/entrega/empresa mock
+  components/  ui (base-ui) + layout
+  constants/   regras de negócio (frete grátis, pontos, UFs)
+  types/       tipos de domínio
+```
 
-## Deploy on Vercel
+`src/lib/pricing.ts` é a **fonte única** de cálculo: `getUnitPrice`, `computeTotals`,
+`resolveFreight`, `computePoints`, `toOrderItem` e `computeOrder` — usados igualmente
+pelo carrinho (cliente) e pela server action (`create-order`), garantindo paridade.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Limitações conhecidas
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Rate limit** da `create-order` é em memória (por instância); para um teto global
+  use um store compartilhado (Redis/Upstash).
+- **Tipos do Supabase**: os clientes ainda não usam o generic `<Database>` — gere com
+  `supabase gen types typescript` quando conectar o projeto.
+- **CSP**: há headers de segurança (`next.config.ts`), mas ainda não uma Content-Security-Policy
+  com nonce (requer QA no navegador antes de habilitar em modo enforce).

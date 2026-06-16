@@ -1,11 +1,18 @@
+"use client";
+
 import { PackageOpen } from "lucide-react";
 
 import type { CategoryGroup } from "../hooks/useCatalogFilters";
+import { useCart } from "@/features/cart/useCart";
 import { ProductCard } from "./ProductCard";
 import { EmptyState } from "@/components/ui/empty-state";
 
 /** Lista de produtos agrupada por categoria. */
 export function ProductList({ groups }: { groups: CategoryGroup[] }) {
+  // A assinatura ao carrinho vive aqui; os cards recebem qty por prop e são
+  // memoizados, então só o card alterado re-renderiza (não a lista inteira).
+  const { quantities, setQty } = useCart();
+
   if (groups.length === 0) {
     return (
       <EmptyState
@@ -32,6 +39,8 @@ export function ProductList({ groups }: { groups: CategoryGroup[] }) {
                 key={product.id}
                 product={product}
                 category={category}
+                qty={quantities[product.id] ?? 0}
+                onSetQty={setQty}
               />
             ))}
           </div>

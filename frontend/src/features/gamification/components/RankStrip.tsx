@@ -1,3 +1,5 @@
+import { formatInt, pluralize } from "@/lib/format";
+
 /** Faixa "Você está em Nº lugar" (apresentacional). */
 export function RankStrip({
   position,
@@ -15,8 +17,8 @@ export function RankStrip({
         lugar
       </span>
       <span className="tabular-nums">
-        <strong className="text-foreground">{pontos}</strong> pts · {pedidos}{" "}
-        pedidos
+        <strong className="text-foreground">{formatInt(pontos)}</strong> pts ·{" "}
+        {pluralize(pedidos, "pedido", "pedidos")}
       </span>
     </div>
   );

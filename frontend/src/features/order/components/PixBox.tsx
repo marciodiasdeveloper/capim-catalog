@@ -4,7 +4,7 @@ import { CopyButton } from "@/components/ui/copy-button";
 
 /** Caixa com os dados do PIX e botão para copiar a chave. */
 export function PixBox() {
-  const { pix, atendente } = COMPANY;
+  const { pix } = COMPANY;
 
   return (
     <Card className="ring-primary/30">
@@ -30,8 +30,8 @@ export function PixBox() {
         </CopyButton>
 
         <p className="text-muted-foreground text-xs">
-          Após o pagamento, envie o comprovante junto com o pedido no WhatsApp
-          da {atendente}.
+          Após o pagamento, envie o comprovante junto com o pedido pelo nosso
+          WhatsApp.
         </p>
       </CardContent>
     </Card>

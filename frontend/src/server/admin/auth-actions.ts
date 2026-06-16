@@ -21,13 +21,15 @@ export async function signInAdmin(
   const password = String(formData.get("password") ?? "");
 
   if (!email || !password) return { error: "Informe e-mail e senha." };
-  if (!isAdminEmail(email)) {
-    return { error: "Este e-mail não tem acesso ao admin." };
-  }
+
+  // Mensagem uniforme p/ e-mail-não-admin e senha-errada evita enumeração de
+  // quais e-mails têm acesso ao admin.
+  const invalid = { error: "E-mail ou senha inválidos." };
+  if (!isAdminEmail(email)) return invalid;
 
   const supabase = await createAuthClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: "E-mail ou senha inválidos." };
+  if (error) return invalid;
 
   redirect("/admin");
 }

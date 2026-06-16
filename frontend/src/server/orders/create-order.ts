@@ -2,42 +2,42 @@
 
 import { z } from "zod";
 
-import type { CartItem, Order, OrderItem } from "@/types";
+import { headers } from "next/headers";
+
+import type { Order } from "@/types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getProducts } from "@/server/catalog";
-import { computeTotals, getUnitPrice } from "@/lib/pricing";
-import { findDeliveryOption } from "@/data/shipping";
+import { computeOrder } from "@/lib/pricing";
 import { onlyDigits } from "@/lib/format";
-import {
-  FRETE_GRATIS_ACIMA,
-  PONTOS_BONUS_POR_PEDIDO,
-  PONTOS_POR_REAL,
-} from "@/constants";
+import { rateLimit } from "./rate-limit";
 
+// Limites de tamanho protegem este endpoint público (não autenticado) contra
+// abuso/bloat: nenhuma string ilimitada, nº de itens e quantidades com teto.
 const inputSchema = z.object({
   items: z
     .array(
       z.object({
-        productId: z.string(),
-        qty: z.coerce.number().int().min(1),
+        productId: z.string().max(100),
+        qty: z.coerce.number().int().min(1).max(9999),
       })
     )
-    .min(1),
+    .min(1)
+    .max(200),
   customer: z.object({
-    nome: z.string().trim().min(1),
-    cpf: z.string(),
-    telefone: z.string().default(""),
-    rua: z.string().default(""),
-    numero: z.string().default(""),
-    bairro: z.string().default(""),
-    complemento: z.string().default(""),
-    cidade: z.string().default(""),
-    cep: z.string().default(""),
-    uf: z.string().default(""),
-    observacao: z.string().default(""),
+    nome: z.string().trim().min(1).max(120),
+    cpf: z.string().max(20),
+    telefone: z.string().max(30).default(""),
+    rua: z.string().max(200).default(""),
+    numero: z.string().max(20).default(""),
+    bairro: z.string().max(120).default(""),
+    complemento: z.string().max(120).default(""),
+    cidade: z.string().max(120).default(""),
+    cep: z.string().max(12).default(""),
+    uf: z.string().max(2).default(""),
+    observacao: z.string().max(1000).default(""),
   }),
-  deliveryId: z.string().default(""),
+  deliveryId: z.string().max(40).default(""),
 });
 
 export type CreateOrderInput = z.input<typeof inputSchema>;
@@ -52,6 +52,17 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     throw new Error("Supabase não configurado.");
   }
 
+  // Rate limit por IP (resiliente fora de contexto de request, ex.: testes).
+  let ip = "anon";
+  try {
+    ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "anon";
+  } catch {
+    /* sem contexto de request */
+  }
+  if (!rateLimit(`order:${ip}`)) {
+    throw new Error("Muitas tentativas em pouco tempo. Aguarde alguns instantes.");
+  }
+
   const parsed = inputSchema.safeParse(input);
   if (!parsed.success) throw new Error("Pedido inválido.");
   const { items, customer, deliveryId } = parsed.data;
@@ -61,38 +72,17 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     throw new Error("CPF inválido.");
   }
 
-  // Recalcula a partir dos preços reais do banco.
+  // Recalcula TODO o pedido a partir dos preços reais do banco (fonte única,
+  // compartilhada com o cliente via computeOrder). Nunca confia no cliente.
   const products = await getProducts();
-  const byId = new Map(products.map((p) => [p.id, p]));
+  const { orderItems, subtotal, delivery, frete, total, points } = computeOrder(
+    products,
+    items,
+    customer.uf,
+    deliveryId
+  );
 
-  const cartItems: CartItem[] = items
-    .map(({ productId, qty }) => {
-      const product = byId.get(productId);
-      if (!product) return null;
-      return { product, qty: Math.max(qty, product.minQty) };
-    })
-    .filter((it): it is CartItem => it !== null);
-
-  if (cartItems.length === 0) throw new Error("Nenhum produto válido no pedido.");
-
-  const orderItems: OrderItem[] = cartItems.map(({ product, qty }) => {
-    const { price, isWholesale } = getUnitPrice(product, qty);
-    return {
-      productId: product.id,
-      name: product.name,
-      qty,
-      unitPrice: price,
-      lineTotal: price * qty,
-      isWholesale,
-    };
-  });
-
-  const { subtotal } = computeTotals(cartItems);
-  const delivery = findDeliveryOption(customer.uf, deliveryId) ?? null;
-  const freteGratis = subtotal >= FRETE_GRATIS_ACIMA;
-  const frete = delivery ? (freteGratis ? 0 : delivery.price) : 0;
-  const total = subtotal + frete;
-  const points = Math.floor(total) * PONTOS_POR_REAL + PONTOS_BONUS_POR_PEDIDO;
+  if (orderItems.length === 0) throw new Error("Nenhum produto válido no pedido.");
 
   const supabase = createAdminClient();
   const cpf = onlyDigits(customer.cpf);
@@ -171,12 +161,11 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     ref: orderRow.id,
     items: orderItems,
     customer,
-    delivery: delivery
-      ? { label: delivery.label, price: frete, eta: delivery.eta }
-      : null,
+    delivery,
     subtotal,
     frete,
     total,
+    points,
     createdAtISO: new Date().toISOString(),
   };
 }

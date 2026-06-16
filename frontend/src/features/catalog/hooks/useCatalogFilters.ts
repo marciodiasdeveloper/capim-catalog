@@ -27,7 +27,7 @@ export function useCatalogFilters(
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>(ALL_CATEGORY);
 
-  const normalizedQuery = normalize(query.trim());
+  const normalizedQuery = useMemo(() => normalize(query.trim()), [query]);
 
   const filtered = useMemo(() => {
     return products.filter((product) => {

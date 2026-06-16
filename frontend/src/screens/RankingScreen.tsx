@@ -18,6 +18,7 @@ export async function RankingScreen() {
   return (
     <Container className="space-y-8 py-8">
       <SectionTitle
+        as="h1"
         description={`Os clientes que mais pontuaram em ${currentMonthLabel()}.`}
       >
         Ranking do mês

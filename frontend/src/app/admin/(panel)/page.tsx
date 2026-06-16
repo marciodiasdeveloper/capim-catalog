@@ -32,6 +32,7 @@ export default async function AdminDashboard() {
     <div className="space-y-10">
       <section className="space-y-4">
         <SectionTitle
+          as="h1"
           description={`${products.length} produto(s) no catálogo.`}
           action={
             <Link

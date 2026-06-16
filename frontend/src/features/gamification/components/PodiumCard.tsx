@@ -1,5 +1,5 @@
 import type { RankedUser } from "@/data/ranking";
-import { shortName } from "@/lib/format";
+import { formatInt, pluralize, shortName } from "@/lib/format";
 import { medalFor, podiumColor } from "../medals";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { Card } from "@/components/ui/card";
@@ -31,10 +31,10 @@ export function PodiumCard({ user }: { user: RankedUser }) {
       </div>
       <div className="flex items-center gap-3 text-sm">
         <span className="font-bold tabular-nums" style={{ color }}>
-          {user.pontos} pts
+          {formatInt(user.pontos)} pts
         </span>
         <span className="text-muted-foreground tabular-nums">
-          {user.pedidos} pedidos
+          {pluralize(user.pedidos, "pedido", "pedidos")}
         </span>
       </div>
       {user.isCurrent && (
