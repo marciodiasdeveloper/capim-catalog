@@ -87,7 +87,15 @@ export interface Database {
           created_at?: Ts;
           updated_at?: Ts;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       orders: {
         Row: {
@@ -110,6 +118,8 @@ export interface Database {
           subtotal: number;
           frete: number;
           total: number;
+          discount: number;
+          coupon_code: string | null;
           points: number;
           status: OrderStatus;
           created_at: Ts;
@@ -134,16 +144,36 @@ export interface Database {
           subtotal?: number;
           frete?: number;
           total?: number;
+          discount?: number;
+          coupon_code?: string | null;
           points?: number;
           status?: OrderStatus;
           created_at?: Ts;
         };
         Update: {
-          status?: OrderStatus;
           customer_id?: string | null;
-          [key: string]: string | number | null | undefined;
+          customer_name?: string;
+          customer_cpf?: string;
+          customer_phone?: string | null;
+          delivery_label?: string | null;
+          delivery_price?: number;
+          subtotal?: number;
+          frete?: number;
+          total?: number;
+          discount?: number;
+          coupon_code?: string | null;
+          points?: number;
+          status?: OrderStatus;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       order_items: {
         Row: {
@@ -176,7 +206,15 @@ export interface Database {
           line_total?: number;
           is_wholesale?: boolean;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       customers: {
         Row: {
@@ -223,6 +261,98 @@ export interface Database {
           uf?: string | null;
           cep?: string | null;
           observacao?: string | null;
+          updated_at?: Ts;
+        };
+        Relationships: [];
+      };
+      company_settings: {
+        Row: {
+          id: string;
+          name: string;
+          tagline: string;
+          whatsapp: string;
+          atendente: string;
+          pix_titular: string;
+          pix_chave_tipo: string;
+          pix_chave: string;
+          pix_banco: string;
+          logo_url: string | null;
+          updated_at: Ts;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          tagline?: string;
+          whatsapp?: string;
+          atendente?: string;
+          pix_titular?: string;
+          pix_chave_tipo?: string;
+          pix_chave?: string;
+          pix_banco?: string;
+          logo_url?: string | null;
+          updated_at?: Ts;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          tagline?: string;
+          whatsapp?: string;
+          atendente?: string;
+          pix_titular?: string;
+          pix_chave_tipo?: string;
+          pix_chave?: string;
+          pix_banco?: string;
+          logo_url?: string | null;
+          updated_at?: Ts;
+        };
+        Relationships: [];
+      };
+      coupons: {
+        Row: {
+          id: string;
+          code: string;
+          description: string;
+          discount_type: "percentage" | "fixed";
+          discount_value: number;
+          min_items: number;
+          min_subtotal: number;
+          max_discount: number | null;
+          active: boolean;
+          max_uses: number | null;
+          current_uses: number;
+          expires_at: Ts | null;
+          created_at: Ts;
+          updated_at: Ts;
+        };
+        Insert: {
+          id: string;
+          code: string;
+          description?: string;
+          discount_type: "percentage" | "fixed";
+          discount_value: number;
+          min_items?: number;
+          min_subtotal?: number;
+          max_discount?: number | null;
+          active?: boolean;
+          max_uses?: number | null;
+          current_uses?: number;
+          expires_at?: Ts | null;
+          created_at?: Ts;
+          updated_at?: Ts;
+        };
+        Update: {
+          id?: string;
+          code?: string;
+          description?: string;
+          discount_type?: "percentage" | "fixed";
+          discount_value?: number;
+          min_items?: number;
+          min_subtotal?: number;
+          max_discount?: number | null;
+          active?: boolean;
+          max_uses?: number | null;
+          current_uses?: number;
+          expires_at?: Ts | null;
           updated_at?: Ts;
         };
         Relationships: [];

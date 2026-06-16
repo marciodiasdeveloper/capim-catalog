@@ -1,5 +1,7 @@
 import { getProductsById } from "@/server/catalog";
+import { getCompany } from "@/server/company";
 import { CartProvider } from "@/features/cart/CartContext";
+import { CompanyProvider } from "@/features/company/CompanyContext";
 import { Header } from "@/components/layout/Header";
 
 /** Layout do storefront: carrinho + cabeçalho da loja. */
@@ -8,24 +10,29 @@ export default async function SiteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const productsById = await getProductsById();
+  const [productsById, company] = await Promise.all([
+    getProductsById(),
+    getCompany(),
+  ]);
 
   return (
     <CartProvider products={productsById}>
-      <a
-        href="#conteudo"
-        className="bg-background focus:ring-ring sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:px-4 focus:py-2 focus:ring-2"
-      >
-        Pular para o conteúdo
-      </a>
-      <Header />
-      <main
-        id="conteudo"
-        tabIndex={-1}
-        className="w-full flex-1 overflow-x-clip outline-none"
-      >
-        {children}
-      </main>
+      <CompanyProvider company={company}>
+        <a
+          href="#conteudo"
+          className="bg-background focus:ring-ring sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-lg focus:px-4 focus:py-2 focus:ring-2"
+        >
+          Pular para o conteúdo
+        </a>
+        <Header />
+        <main
+          id="conteudo"
+          tabIndex={-1}
+          className="w-full flex-1 overflow-x-clip outline-none"
+        >
+          {children}
+        </main>
+      </CompanyProvider>
     </CartProvider>
   );
 }

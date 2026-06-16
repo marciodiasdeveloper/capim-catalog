@@ -4,13 +4,14 @@
  * (`create-order`) — a fonte única de verdade para qualquer cálculo monetário.
  */
 
-import type { CartItem, OrderItem, Product } from "@/types";
+import type { CartItem, Coupon, OrderItem, Product } from "@/types";
 import {
   FRETE_GRATIS_ACIMA,
   PONTOS_BONUS_POR_PEDIDO,
   PONTOS_POR_REAL,
 } from "@/constants";
 import { findDeliveryOption } from "@/data/shipping";
+import { evaluateCoupon } from "./coupon";
 
 /**
  * Arredonda um valor monetário para 2 casas (centavos), eliminando o erro de
@@ -108,6 +109,10 @@ export function toOrderItem(product: Product, qty: number): OrderItem {
 export interface ComputedOrder {
   orderItems: OrderItem[];
   subtotal: number;
+  /** Desconto do cupom aplicado (0 se nenhum/não qualifica). */
+  discount: number;
+  /** Cupom efetivamente aplicado (re-avaliado), ou null. */
+  coupon: { code: string; description: string } | null;
   delivery: { label: string; price: number; eta?: string } | null;
   frete: number;
   freteGratis: boolean;
@@ -117,15 +122,18 @@ export interface ComputedOrder {
 
 /**
  * Cálculo autoritativo do pedido a partir do catálogo: mapeia itens (ignorando
- * productIds inexistentes), aplica minQty/atacado, resolve frete e total e
- * calcula os pontos. Pura e testável; consumida pelo `create-order` (servidor)
- * e pelo fallback local do carrinho, mantendo cliente e servidor em sincronia.
+ * productIds inexistentes), aplica minQty/atacado, **re-avalia o cupom** (nunca
+ * confia no desconto vindo do cliente), resolve frete, total e pontos. Pura e
+ * testável; consumida pelo `create-order` (servidor) e pelo fallback local do
+ * carrinho, mantendo cliente e servidor em sincronia.
  */
 export function computeOrder(
   products: Product[],
   items: { productId: string; qty: number }[],
   uf: string,
-  deliveryId: string
+  deliveryId: string,
+  coupon?: Coupon | null,
+  nowISO?: string
 ): ComputedOrder {
   const byId = new Map(products.map((p) => [p.id, p]));
   const orderItems = items
@@ -136,16 +144,39 @@ export function computeOrder(
     .filter((it): it is OrderItem => it !== null);
 
   const subtotal = roundMoney(orderItems.reduce((a, it) => a + it.lineTotal, 0));
+  const count = orderItems.reduce((a, it) => a + it.qty, 0);
+
+  // Re-avalia o cupom contra os valores recalculados (não confia no cliente).
+  let discount = 0;
+  let appliedCoupon: { code: string; description: string } | null = null;
+  if (coupon) {
+    const evaluation = evaluateCoupon(coupon, { subtotal, count, nowISO });
+    if (evaluation.ok) {
+      discount = evaluation.discount;
+      appliedCoupon = { code: coupon.code, description: coupon.description };
+    }
+  }
+
   const option = findDeliveryOption(uf, deliveryId) ?? null;
   const { frete, freteGratis } = resolveFreight(
     subtotal,
     option ? option.price : null
   );
-  const total = roundMoney(subtotal + frete);
+  const total = roundMoney(subtotal - discount + frete);
   const points = computePoints(total);
   const delivery = option
     ? { label: option.label, price: frete, eta: option.eta }
     : null;
 
-  return { orderItems, subtotal, delivery, frete, freteGratis, total, points };
+  return {
+    orderItems,
+    subtotal,
+    discount,
+    coupon: appliedCoupon,
+    delivery,
+    frete,
+    freteGratis,
+    total,
+    points,
+  };
 }

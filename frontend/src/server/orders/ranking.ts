@@ -4,19 +4,6 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { getRankedUsers, type RankedUser } from "@/data/ranking";
 
-interface JoinedCustomer {
-  name: string;
-  cidade: string | null;
-  uf: string | null;
-  cpf: string;
-}
-
-interface OrderRankRow {
-  customer_id: string | null;
-  points: number;
-  customers: JoinedCustomer | JoinedCustomer[] | null;
-}
-
 export interface AggregatedCustomer {
   customerId: string;
   cpf: string;
@@ -52,7 +39,7 @@ export async function aggregateMonthlyOrders(): Promise<AggregatedCustomer[]> {
   if (error) throw new Error(`Erro ao carregar ranking: ${error.message}`);
 
   const byCustomer = new Map<string, AggregatedCustomer>();
-  for (const row of data as OrderRankRow[]) {
+  for (const row of data ?? []) {
     const customer = Array.isArray(row.customers)
       ? row.customers[0]
       : row.customers;

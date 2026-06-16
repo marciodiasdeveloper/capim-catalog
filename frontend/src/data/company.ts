@@ -9,6 +9,8 @@ export interface Company {
   whatsapp: string;
   /** Nome de exibição do atendente que recebe os pedidos. */
   atendente: string;
+  /** URL pública do logo (Supabase Storage) ou null se não houver. */
+  logoUrl: string | null;
   pix: {
     titular: string;
     chaveTipo: string;
@@ -22,6 +24,7 @@ export const COMPANY: Company = {
   tagline: "Sua farmácia de bairro, agora online",
   whatsapp: "553799447506",
   atendente: "Equipe Capim",
+  logoUrl: null,
   pix: {
     titular: "Capim Distribuidora de Medicamentos LTDA",
     chaveTipo: "CNPJ",

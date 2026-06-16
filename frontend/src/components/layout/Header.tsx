@@ -4,10 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Pill, ShoppingCart, Trophy } from "lucide-react";
 
-import { COMPANY } from "@/data/company";
 import { useCart } from "@/features/cart/useCart";
+import { useCompany } from "@/features/company/CompanyContext";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Container } from "./Container";
+import { CompanyLogo } from "./CompanyLogo";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -18,15 +19,21 @@ const NAV_LINKS = [
 export function Header() {
   const pathname = usePathname();
   const { count } = useCart();
+  const company = useCompany();
 
   return (
     <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
       <Container className="flex h-14 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 font-bold">
-          <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg">
-            <Pill className="size-4" />
+          <CompanyLogo logoUrl={company.logoUrl} name={company.name} />
+          <span className="hidden flex-col leading-tight sm:flex">
+            <span>{company.name}</span>
+            {company.tagline && (
+              <span className="text-muted-foreground text-[11px] font-normal">
+                {company.tagline}
+              </span>
+            )}
           </span>
-          <span className="hidden sm:inline">{COMPANY.name}</span>
         </Link>
 
         <nav className="flex items-center gap-1">
@@ -65,6 +72,13 @@ export function Header() {
               </span>
             )}
           </Link>
+
+          {/* Região viva: anuncia a mudança de quantidade do pedido a leitores de tela. */}
+          <span aria-live="polite" className="sr-only">
+            {count > 0
+              ? `${count} ${count === 1 ? "item" : "itens"} no pedido`
+              : ""}
+          </span>
         </nav>
       </Container>
     </header>

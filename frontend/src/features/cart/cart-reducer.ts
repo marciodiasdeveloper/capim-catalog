@@ -3,7 +3,7 @@
  * separada do provider para ser testável isoladamente.
  */
 
-import type { Customer, Order } from "@/types";
+import type { Coupon, Customer, Order } from "@/types";
 
 export const EMPTY_CUSTOMER: Customer = {
   nome: "",
@@ -26,6 +26,8 @@ export interface CartState {
   customer: Customer;
   /** Id da modalidade de entrega escolhida. */
   deliveryId: string;
+  /** Cupom aplicado (o desconto efetivo é re-avaliado contra o carrinho). */
+  appliedCoupon: Coupon | null;
   lastOrder: Order | null;
 }
 
@@ -35,6 +37,7 @@ export type Action =
   | { type: "CLEAR_ITEMS" }
   | { type: "PATCH_CUSTOMER"; patch: Partial<Customer> }
   | { type: "SET_DELIVERY"; deliveryId: string }
+  | { type: "SET_COUPON"; coupon: Coupon | null }
   | { type: "SET_LAST_ORDER"; order: Order | null };
 
 export const initialState: CartState = {
@@ -42,6 +45,7 @@ export const initialState: CartState = {
   quantities: {},
   customer: EMPTY_CUSTOMER,
   deliveryId: "",
+  appliedCoupon: null,
   lastOrder: null,
 };
 
@@ -57,11 +61,14 @@ export function reducer(state: CartState, action: Action): CartState {
       return { ...state, quantities };
     }
     case "CLEAR_ITEMS":
-      return { ...state, quantities: {} };
+      // Esvaziar o carrinho também remove o cupom aplicado.
+      return { ...state, quantities: {}, appliedCoupon: null };
     case "PATCH_CUSTOMER":
       return { ...state, customer: { ...state.customer, ...action.patch } };
     case "SET_DELIVERY":
       return { ...state, deliveryId: action.deliveryId };
+    case "SET_COUPON":
+      return { ...state, appliedCoupon: action.coupon };
     case "SET_LAST_ORDER":
       return { ...state, lastOrder: action.order };
     default:

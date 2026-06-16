@@ -3,7 +3,7 @@ import "server-only";
 import type { CustomerRecord } from "@/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
-import { mapCustomer, type CustomerRow } from "../row-mappers";
+import { mapCustomer } from "../row-mappers";
 import type { OrderStatus } from "./order-queries";
 
 export interface AdminCustomer extends CustomerRecord {
@@ -37,7 +37,7 @@ export async function getAdminCustomers(query?: string): Promise<AdminCustomer[]
   const { data, error } = await builder;
   if (error) throw new Error(`Erro ao carregar clientes: ${error.message}`);
 
-  const customers = (data as CustomerRow[]).map(mapCustomer);
+  const customers = (data ?? []).map(mapCustomer);
   if (customers.length === 0) return [];
 
   const ids = customers.map((c) => c.id);
@@ -48,11 +48,7 @@ export async function getAdminCustomers(query?: string): Promise<AdminCustomer[]
   if (ordersError) throw new Error(ordersError.message);
 
   const stats = new Map<string, { count: number; spent: number }>();
-  for (const order of orderRows as {
-    customer_id: string | null;
-    total: number | string;
-    status: OrderStatus;
-  }[]) {
+  for (const order of orderRows ?? []) {
     if (!order.customer_id) continue;
     const current = stats.get(order.customer_id) ?? { count: 0, spent: 0 };
     current.count += 1;
@@ -78,7 +74,7 @@ export async function getAdminCustomer(
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? mapCustomer(data as CustomerRow) : null;
+  return data ? mapCustomer(data) : null;
 }
 
 export async function getCustomerOrders(
@@ -93,16 +89,7 @@ export async function getCustomerOrders(
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
 
-  return (
-    data as {
-      id: string;
-      number: number;
-      total: number | string;
-      points: number;
-      status: OrderStatus;
-      created_at: string;
-    }[]
-  ).map((row) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     number: row.number,
     total: Number(row.total),

@@ -1,5 +1,6 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { Menu } from "@base-ui/react/menu";
 import { Check, Monitor, Moon, Sun } from "lucide-react";
@@ -13,14 +14,23 @@ const OPTIONS = [
   { value: "system", label: "Sistema", icon: Monitor },
 ] as const;
 
+const emptySubscribe = () => () => {};
+
 /** Seletor de tema (claro/escuro/sistema) no header. */
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
-  // No SSR e na 1ª renderização do cliente `theme` é undefined (next-themes só
-  // resolve após montar) → ícone neutro, consistente nos dois lados (sem mismatch).
+  // Só refletimos o tema resolvido APÓS montar. No servidor e na 1ª render do
+  // cliente, `mounted` é false (ícone neutro Monitor nos dois lados) → sem
+  // hydration mismatch. useSyncExternalStore evita setState-em-efeito.
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+  const current = mounted ? theme : undefined;
   const TriggerIcon =
-    theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
+    current === "light" ? Sun : current === "dark" ? Moon : Monitor;
 
   return (
     <Menu.Root>
@@ -49,7 +59,7 @@ export function ThemeToggle() {
               >
                 <Icon className="size-4" />
                 {label}
-                {theme === value && (
+                {current === value && (
                   <Check className="absolute right-2 size-4" />
                 )}
               </Menu.Item>

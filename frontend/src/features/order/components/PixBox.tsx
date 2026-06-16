@@ -1,10 +1,12 @@
-import { COMPANY } from "@/data/company";
+"use client";
+
+import { useCompany } from "@/features/company/CompanyContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { CopyButton } from "@/components/ui/copy-button";
 
 /** Caixa com os dados do PIX e botão para copiar a chave. */
 export function PixBox() {
-  const { pix } = COMPANY;
+  const { pix } = useCompany();
 
   return (
     <Card className="ring-primary/30">

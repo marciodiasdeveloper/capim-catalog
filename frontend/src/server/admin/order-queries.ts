@@ -23,20 +23,6 @@ export interface AdminOrder {
   items: AdminOrderItem[];
 }
 
-interface OrderRow {
-  id: string;
-  number: number;
-  customer_name: string;
-  customer_phone: string | null;
-  cidade: string | null;
-  uf: string | null;
-  total: number | string;
-  points: number;
-  status: OrderStatus;
-  created_at: string;
-  order_items: AdminOrderItem[] | null;
-}
-
 function startOfMonthISO(): string {
   const now = new Date();
   return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -67,7 +53,7 @@ export async function getAdminOrders(
   const { data, error } = await builder;
   if (error) throw new Error(`Erro ao carregar pedidos: ${error.message}`);
 
-  return (data as OrderRow[]).map((row) => ({
+  return (data ?? []).map((row) => ({
     id: row.id,
     number: row.number,
     customerName: row.customer_name,
@@ -114,40 +100,6 @@ export interface AdminOrderDetail {
   items: AdminOrderDetailItem[];
 }
 
-interface OrderDetailRow {
-  id: string;
-  number: number;
-  customer_id: string | null;
-  customer_name: string;
-  customer_cpf: string;
-  customer_phone: string | null;
-  rua: string | null;
-  numero: string | null;
-  bairro: string | null;
-  complemento: string | null;
-  cidade: string | null;
-  uf: string | null;
-  cep: string | null;
-  observacao: string | null;
-  delivery_label: string | null;
-  delivery_price: number | string;
-  subtotal: number | string;
-  frete: number | string;
-  total: number | string;
-  points: number;
-  status: OrderStatus;
-  created_at: string;
-  order_items:
-    | {
-        name: string;
-        qty: number;
-        unit_price: number | string;
-        line_total: number | string;
-        is_wholesale: boolean;
-      }[]
-    | null;
-}
-
 export async function getAdminOrder(
   id: string
 ): Promise<AdminOrderDetail | null> {
@@ -165,7 +117,7 @@ export async function getAdminOrder(
   if (error) throw new Error(error.message);
   if (!data) return null;
 
-  const row = data as OrderDetailRow;
+  const row = data;
   return {
     id: row.id,
     number: row.number,

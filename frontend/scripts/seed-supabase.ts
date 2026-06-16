@@ -11,6 +11,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import { CATEGORIES } from "../src/data/categories";
 import { PRODUCTS } from "../src/data/products";
+import { COMPANY } from "../src/data/company";
 
 config({ path: ".env.local" });
 
@@ -62,6 +63,21 @@ async function main() {
     .upsert(products);
   if (productsError) throw productsError;
   console.log(`✓ ${products.length} produtos inseridos`);
+
+  const { error: companyError } = await supabase.from("company_settings").upsert({
+    id: "default",
+    name: COMPANY.name,
+    tagline: COMPANY.tagline,
+    whatsapp: COMPANY.whatsapp,
+    atendente: COMPANY.atendente,
+    pix_titular: COMPANY.pix.titular,
+    pix_chave_tipo: COMPANY.pix.chaveTipo,
+    pix_chave: COMPANY.pix.chave,
+    pix_banco: COMPANY.pix.banco,
+    logo_url: COMPANY.logoUrl ?? null,
+  });
+  if (companyError) throw companyError;
+  console.log("✓ company_settings (default) inserido");
 }
 
 main()

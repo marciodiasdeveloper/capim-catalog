@@ -30,9 +30,10 @@ copie `.env.local.example` → `.env.local` e siga `supabase/README.md`.
 | `pnpm build` / `pnpm start` | Build de produção / servir |
 | `pnpm lint` | ESLint (flat config) |
 | `pnpm exec tsc --noEmit` | Checagem de tipos |
-| `pnpm test` | Testes unitários (Vitest) |
+| `pnpm test` | Testes unitários/integração (Vitest) |
 | `pnpm test:watch` | Vitest em watch |
 | `pnpm test:cov` | Testes com cobertura |
+| `pnpm test:e2e` | Testes end-to-end (Playwright, em `e2e/`) |
 | `pnpm seed` | Popula o Supabase a partir dos mocks |
 
 ## Stack
@@ -40,7 +41,9 @@ copie `.env.local.example` → `.env.local` e siga `supabase/README.md`.
 Next.js 16 (App Router, **fork modificado** — ver `AGENTS.md`), React 19,
 TypeScript estrito, Tailwind v4 (tokens em `src/app/globals.css`, sem config),
 componentes **base-ui** (estilo shadcn em `src/components/ui`), Supabase
-(opcional), next-themes, sonner, lucide. Testes com Vitest.
+(opcional), next-themes, sonner, lucide. Testes: **Vitest** (unitário/integração)
++ **Playwright** (e2e). A camada Supabase é tipada via generic `<Database>`
+(`src/types/supabase.ts`).
 
 ## Estrutura (resumo)
 
@@ -69,3 +72,7 @@ pelo carrinho (cliente) e pela server action (`create-order`), garantindo parida
   `supabase gen types typescript` quando conectar o projeto.
 - **CSP**: há headers de segurança (`next.config.ts`), mas ainda não uma Content-Security-Policy
   com nonce (requer QA no navegador antes de habilitar em modo enforce).
+- **Contraste de cor (a11y)**: auditado com axe (`pnpm test:e2e`); estrutura/ARIA/nomes passam
+  com zero violações. Resta afinar o contraste de alguns tokens de marca (`--primary` usado como
+  fundo e como texto; accents de categoria) — decisão de design (idealmente tokens separados
+  para fundo vs. texto).

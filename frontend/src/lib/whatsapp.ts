@@ -16,6 +16,11 @@ export function buildOrderMessage(order: Order, company: Company): string {
   const c = order.customer;
   const lines: string[] = [];
 
+  if (company.atendente) {
+    lines.push(`Olá, ${company.atendente}!`);
+    lines.push("");
+  }
+
   lines.push(`*Pedido #${order.id}* — ${company.name}`);
   lines.push(`*Cliente:* ${c.nome}`);
   if (c.cpf) lines.push(`*CPF:* ${c.cpf}`);
@@ -41,6 +46,10 @@ export function buildOrderMessage(order: Order, company: Company): string {
   }
 
   lines.push(`*Subtotal:* ${formatBRL(order.subtotal)}`);
+  if (order.discount > 0) {
+    const couponLabel = order.couponCode ? ` (${order.couponCode})` : "";
+    lines.push(`*Desconto${couponLabel}:* -${formatBRL(order.discount)}`);
+  }
   lines.push(`*Frete:* ${freteLabel(order)}`);
   lines.push(`*Total:* ${formatBRL(order.total)}`);
 

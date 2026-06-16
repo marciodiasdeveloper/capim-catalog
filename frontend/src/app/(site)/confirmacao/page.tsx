@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 
-import { COMPANY } from "@/data/company";
+import { getCompany } from "@/server/company";
 import { ConfirmationScreen } from "@/screens/ConfirmationScreen";
 
-export const metadata: Metadata = {
-  title: `Pedido recebido — ${COMPANY.name}`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const company = await getCompany();
+  return {
+    title: `Pedido recebido — ${company.name}`,
+  };
+}
 
 export default function ConfirmacaoPage() {
   return <ConfirmationScreen />;

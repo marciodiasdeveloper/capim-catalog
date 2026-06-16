@@ -5,6 +5,7 @@ import { renderHook, act, cleanup } from "@testing-library/react";
 // Evita puxar a cadeia server-only via createOrder (CartContext o importa).
 vi.mock("server-only", () => ({}));
 vi.mock("@/server/orders/create-order", () => ({ createOrder: vi.fn() }));
+vi.mock("@/server/orders/apply-coupon", () => ({ applyCoupon: vi.fn() }));
 
 import { CartProvider } from "./CartContext";
 import { useCart } from "./useCart";

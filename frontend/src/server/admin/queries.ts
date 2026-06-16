@@ -36,7 +36,7 @@ export async function getAdminCategories(): Promise<AdminCategory[]> {
     .select("*")
     .order("sort_order", { ascending: true });
   if (error) throw new Error(error.message);
-  return (data as CategoryRow[]).map(mapCategory);
+  return (data ?? []).map(mapCategory);
 }
 
 export async function getAdminProducts(): Promise<AdminProduct[]> {
@@ -47,7 +47,7 @@ export async function getAdminProducts(): Promise<AdminProduct[]> {
     .select("*")
     .order("name", { ascending: true });
   if (error) throw new Error(error.message);
-  return (data as ProductRow[]).map(mapProduct);
+  return (data ?? []).map(mapProduct);
 }
 
 export async function getAdminProduct(id: string): Promise<AdminProduct | null> {
@@ -59,7 +59,7 @@ export async function getAdminProduct(id: string): Promise<AdminProduct | null> 
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? mapProduct(data as ProductRow) : null;
+  return data ? mapProduct(data) : null;
 }
 
 export async function getAdminCategory(id: string): Promise<AdminCategory | null> {
@@ -71,5 +71,5 @@ export async function getAdminCategory(id: string): Promise<AdminCategory | null
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? mapCategory(data as CategoryRow) : null;
+  return data ? mapCategory(data) : null;
 }

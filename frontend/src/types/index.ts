@@ -80,11 +80,40 @@ export interface Order {
   customer: Customer;
   delivery: OrderDelivery | null;
   subtotal: number;
+  /** Desconto aplicado por cupom (0 se nenhum). */
+  discount: number;
+  /** Código do cupom aplicado, ou null. */
+  couponCode: string | null;
   frete: number;
   total: number;
   /** Pontos de gamificação ganhos no pedido. */
   points: number;
   createdAtISO: string;
+}
+
+export type DiscountType = "percentage" | "fixed";
+
+/** Cupom de desconto. */
+export interface Coupon {
+  id: string;
+  /** Código exibido/digitado pelo cliente (maiúsculas). */
+  code: string;
+  description: string;
+  discountType: DiscountType;
+  /** Percentual (0–100) ou valor fixo em R$, conforme `discountType`. */
+  discountValue: number;
+  /** Quantidade mínima de itens no carrinho para aplicar. */
+  minItems: number;
+  /** Subtotal mínimo para aplicar. */
+  minSubtotal: number;
+  /** Teto do desconto em R$ (para percentuais). null = sem teto. */
+  maxDiscount: number | null;
+  active: boolean;
+  /** Limite total de usos. null = ilimitado. */
+  maxUses: number | null;
+  currentUses: number;
+  /** Validade (ISO). null = sem expiração. */
+  expiresAtISO: string | null;
 }
 
 /** Registro de cliente persistido (tabela customers). */

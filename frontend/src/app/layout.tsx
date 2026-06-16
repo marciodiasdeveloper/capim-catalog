@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import { COMPANY } from "@/data/company";
+import { getCompany } from "@/server/company";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -16,11 +16,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: `${COMPANY.name} — Monte seu pedido`,
-  description:
-    "Catálogo online: monte seu pedido, finalize pelo WhatsApp e concorra no ranking do mês.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const company = await getCompany();
+  return {
+    title: `${company.name} — Monte seu pedido`,
+    description:
+      "Catálogo online: monte seu pedido, finalize pelo WhatsApp e concorra no ranking do mês.",
+  };
+}
 
 export default function RootLayout({
   children,

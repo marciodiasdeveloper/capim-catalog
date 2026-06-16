@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import type { Database } from "@/types/supabase";
+
 /**
  * Proxy (antigo middleware, Next 16). Renova a sessão do Supabase nas rotas de
  * admin para que o token não expire entre navegações. Escopo restrito a /admin
@@ -13,7 +15,7 @@ export async function proxy(request: NextRequest) {
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anonKey) return response;
 
-  const supabase = createServerClient(url, anonKey, {
+  const supabase = createServerClient<Database>(url, anonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

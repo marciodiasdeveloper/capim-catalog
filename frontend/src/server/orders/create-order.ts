@@ -8,6 +8,7 @@ import type { Order } from "@/types";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getProducts } from "@/server/catalog";
+import { getCouponByCode } from "@/server/coupons";
 import { computeOrder } from "@/lib/pricing";
 import { onlyDigits } from "@/lib/format";
 import { rateLimit } from "./rate-limit";
@@ -38,6 +39,7 @@ const inputSchema = z.object({
     observacao: z.string().max(1000).default(""),
   }),
   deliveryId: z.string().max(40).default(""),
+  couponCode: z.string().max(40).optional(),
 });
 
 export type CreateOrderInput = z.input<typeof inputSchema>;
@@ -65,21 +67,38 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
 
   const parsed = inputSchema.safeParse(input);
   if (!parsed.success) throw new Error("Pedido inválido.");
-  const { items, customer, deliveryId } = parsed.data;
+  const { items, customer, deliveryId, couponCode } = parsed.data;
 
   // CPF é a chave do cliente: exige 11 dígitos (evita colapsar clientes em cpf "").
   if (onlyDigits(customer.cpf).length !== 11) {
     throw new Error("CPF inválido.");
   }
 
+  // Busca o cupom (se houver) para re-avaliação autoritativa no servidor.
+  const fetchedCoupon = couponCode
+    ? await getCouponByCode(couponCode)
+    : null;
+
   // Recalcula TODO o pedido a partir dos preços reais do banco (fonte única,
-  // compartilhada com o cliente via computeOrder). Nunca confia no cliente.
+  // compartilhada com o cliente via computeOrder). Nunca confia no cliente —
+  // inclusive o desconto do cupom é re-avaliado aqui.
   const products = await getProducts();
-  const { orderItems, subtotal, delivery, frete, total, points } = computeOrder(
+  const {
+    orderItems,
+    subtotal,
+    discount,
+    coupon: appliedCoupon,
+    delivery,
+    frete,
+    total,
+    points,
+  } = computeOrder(
     products,
     items,
     customer.uf,
-    deliveryId
+    deliveryId,
+    fetchedCoupon,
+    new Date().toISOString()
   );
 
   if (orderItems.length === 0) throw new Error("Nenhum produto válido no pedido.");
@@ -131,6 +150,8 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
       delivery_label: delivery?.label ?? null,
       delivery_price: frete,
       subtotal,
+      discount,
+      coupon_code: appliedCoupon?.code ?? null,
       frete,
       total,
       points,
@@ -140,6 +161,14 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
 
   if (orderError || !orderRow) {
     throw new Error(orderError?.message ?? "Falha ao registrar o pedido.");
+  }
+
+  // Contabiliza o uso do cupom (best-effort; não derruba o pedido se falhar).
+  if (appliedCoupon && fetchedCoupon) {
+    await supabase
+      .from("coupons")
+      .update({ current_uses: fetchedCoupon.currentUses + 1 })
+      .eq("id", fetchedCoupon.id);
   }
 
   const { error: itemsError } = await supabase.from("order_items").insert(
@@ -163,6 +192,8 @@ export async function createOrder(input: CreateOrderInput): Promise<Order> {
     customer,
     delivery,
     subtotal,
+    discount,
+    couponCode: appliedCoupon?.code ?? null,
     frete,
     total,
     points,

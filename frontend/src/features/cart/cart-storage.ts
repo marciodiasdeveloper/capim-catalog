@@ -22,13 +22,29 @@ const fullCustomerSchema = z.object({
   observacao: z.string(),
 });
 
+const couponSchema = z.object({
+  id: z.string(),
+  code: z.string(),
+  description: z.string(),
+  discountType: z.enum(["percentage", "fixed"]),
+  discountValue: z.number(),
+  minItems: z.number(),
+  minSubtotal: z.number(),
+  maxDiscount: z.number().nullable(),
+  active: z.boolean(),
+  maxUses: z.number().nullable(),
+  currentUses: z.number(),
+  expiresAtISO: z.string().nullable(),
+});
+
 const storedCartSchema = z.object({
   quantities: z.record(z.string(), z.number()).optional(),
   customer: fullCustomerSchema.partial().optional(),
   deliveryId: z.string().optional(),
+  appliedCoupon: couponSchema.nullable().optional(),
 });
 
-/** Carrinho salvo: quantidades + cliente (mesclado sobre o vazio) + entrega. */
+/** Carrinho salvo: quantidades + cliente (mesclado sobre o vazio) + entrega + cupom. */
 export function parseStoredCart(raw: string | null): Partial<CartState> | null {
   if (!raw) return null;
   try {
@@ -38,6 +54,7 @@ export function parseStoredCart(raw: string | null): Partial<CartState> | null {
       quantities: parsed.data.quantities ?? {},
       customer: { ...EMPTY_CUSTOMER, ...(parsed.data.customer ?? {}) },
       deliveryId: parsed.data.deliveryId ?? "",
+      appliedCoupon: parsed.data.appliedCoupon ?? null,
     };
   } catch {
     return null;
@@ -67,6 +84,8 @@ const orderSchema = z.object({
     .nullable()
     .default(null),
   subtotal: z.number(),
+  discount: z.number().optional(),
+  couponCode: z.string().nullable().optional(),
   frete: z.number(),
   total: z.number(),
   points: z.number().optional(),
@@ -87,6 +106,8 @@ export function parseStoredOrder(raw: string | null): Order | null {
       customer: d.customer,
       delivery: d.delivery,
       subtotal: d.subtotal,
+      discount: d.discount ?? 0,
+      couponCode: d.couponCode ?? null,
       frete: d.frete,
       total: d.total,
       points: d.points ?? 0,

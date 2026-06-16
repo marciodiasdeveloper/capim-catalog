@@ -10,6 +10,8 @@ interface QuantityStepperProps {
   onChange: (next: number) => void;
   min?: number;
   max?: number;
+  /** "md" (padrão) ou "sm" (compacto, p/ áreas estreitas como o resumo). */
+  size?: "md" | "sm";
   className?: string;
 }
 
@@ -19,9 +21,12 @@ export function QuantityStepper({
   onChange,
   min = 0,
   max = 999,
+  size = "md",
   className,
 }: QuantityStepperProps) {
   const clamp = (n: number) => Math.min(max, Math.max(min, n));
+  const buttonSize = size === "sm" ? "icon-xs" : "icon-sm";
+  const inputWidth = size === "sm" ? "w-7" : "w-10";
 
   return (
     <div
@@ -33,7 +38,7 @@ export function QuantityStepper({
       <Button
         type="button"
         variant="ghost"
-        size="icon-sm"
+        size={buttonSize}
         onClick={() => onChange(clamp(value - 1))}
         disabled={value <= min}
         aria-label="Diminuir quantidade"
@@ -45,7 +50,10 @@ export function QuantityStepper({
         type="number"
         inputMode="numeric"
         aria-label="Quantidade"
-        className="w-10 [appearance:textfield] bg-transparent text-center font-mono text-sm tabular-nums outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+        className={cn(
+          "[appearance:textfield] bg-transparent text-center font-mono text-sm tabular-nums outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+          inputWidth
+        )}
         value={value}
         min={min}
         max={max}
@@ -57,7 +65,7 @@ export function QuantityStepper({
       <Button
         type="button"
         variant="ghost"
-        size="icon-sm"
+        size={buttonSize}
         onClick={() => onChange(clamp(value + 1))}
         disabled={value >= max}
         aria-label="Aumentar quantidade"

@@ -43,3 +43,8 @@ next-env.d.ts
 
 # claude code — overrides locais não compartilhados (agentes/skills/settings.json são versionados)
 .claude/settings.local.json
+
+# playwright (e2e)
+/test-results
+/playwright-report
+/playwright/.cache

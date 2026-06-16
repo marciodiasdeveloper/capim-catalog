@@ -8,15 +8,17 @@ import {
   useReducer,
 } from "react";
 
-import type { CartItem, Customer, Order, Product } from "@/types";
+import type { CartItem, Coupon, Customer, Order, Product } from "@/types";
 import {
   findDeliveryOption,
   getDeliveryOptions,
   type DeliveryOption,
 } from "@/data/shipping";
 import { computeOrder, computeTotals, resolveFreight, roundMoney } from "@/lib/pricing";
+import { evaluateCoupon } from "@/lib/coupon";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createOrder } from "@/server/orders/create-order";
+import { applyCoupon as applyCouponAction } from "@/server/orders/apply-coupon";
 import {
   ORDER_SEQ_START,
   STORAGE_CART_KEY,
@@ -59,6 +61,8 @@ export interface CartContextValue {
   quantities: Record<string, number>;
   count: number;
   subtotal: number;
+  /** Desconto do cupom aplicado (0 se nenhum/não qualifica). */
+  discount: number;
   frete: number;
   total: number;
   freteGratis: boolean;
@@ -66,11 +70,18 @@ export interface CartContextValue {
   deliveryId: string;
   deliveryOptions: DeliveryOption[];
   selectedDelivery: DeliveryOption | null;
+  /** Cupom aplicado (pode estar válido mas o carrinho ainda não qualificar). */
+  coupon: Coupon | null;
+  /** Aviso quando o cupom está aplicado mas não qualifica (ex.: faltam itens). */
+  couponHint: string | null;
   lastOrder: Order | null;
   setQty: (productId: string, qty: number) => void;
   clearItems: () => void;
   patchCustomer: (patch: Partial<Customer>) => void;
   setDelivery: (deliveryId: string) => void;
+  /** Valida e aplica um cupom pelo código. */
+  applyCoupon: (code: string) => Promise<{ error?: string }>;
+  removeCoupon: () => void;
   /** Cria o pedido localmente (sem servidor). Usado como fallback. */
   finalizeOrder: () => Order;
   /** Finaliza o pedido: persiste no servidor quando configurado, senão local. */
@@ -100,6 +111,7 @@ export function CartProvider({
         payload.quantities = cart.quantities;
         payload.customer = cart.customer;
         payload.deliveryId = cart.deliveryId;
+        payload.appliedCoupon = cart.appliedCoupon ?? null;
       }
       const order = parseStoredOrder(
         sessionStorage.getItem(STORAGE_LAST_ORDER_KEY)
@@ -121,12 +133,19 @@ export function CartProvider({
           quantities: state.quantities,
           customer: state.customer,
           deliveryId: state.deliveryId,
+          appliedCoupon: state.appliedCoupon,
         })
       );
     } catch {
       /* noop */
     }
-  }, [state.hydrated, state.quantities, state.customer, state.deliveryId]);
+  }, [
+    state.hydrated,
+    state.quantities,
+    state.customer,
+    state.deliveryId,
+    state.appliedCoupon,
+  ]);
 
   // Persiste último pedido em sessionStorage.
   useEffect(() => {
@@ -172,7 +191,19 @@ export function CartProvider({
     subtotal,
     selectedDelivery ? selectedDelivery.price : null
   );
-  const total = roundMoney(subtotal + frete);
+
+  // Re-avalia o cupom aplicado contra o carrinho atual (desconto + aviso).
+  const couponEvaluation = useMemo(
+    () =>
+      state.appliedCoupon
+        ? evaluateCoupon(state.appliedCoupon, { subtotal, count })
+        : null,
+    [state.appliedCoupon, subtotal, count]
+  );
+  const discount = couponEvaluation?.ok ? couponEvaluation.discount : 0;
+  const couponHint = couponEvaluation?.hint ?? couponEvaluation?.reason ?? null;
+
+  const total = roundMoney(subtotal - discount + frete);
 
   const setQty = useCallback(
     (productId: string, qty: number) =>
@@ -188,6 +219,21 @@ export function CartProvider({
     (deliveryId: string) => dispatch({ type: "SET_DELIVERY", deliveryId }),
     []
   );
+  const applyCoupon = useCallback(
+    async (code: string): Promise<{ error?: string }> => {
+      const result = await applyCouponAction(code);
+      if (result.error || !result.coupon) {
+        return { error: result.error ?? "Cupom inválido." };
+      }
+      dispatch({ type: "SET_COUPON", coupon: result.coupon });
+      return {};
+    },
+    []
+  );
+  const removeCoupon = useCallback(
+    () => dispatch({ type: "SET_COUPON", coupon: null }),
+    []
+  );
 
   const finalizeOrder = useCallback((): Order => {
     // Usa o mesmo cálculo autoritativo do servidor (computeOrder) para que o
@@ -196,7 +242,9 @@ export function CartProvider({
       Object.values(products),
       items.map((it) => ({ productId: it.product.id, qty: it.qty })),
       state.customer.uf,
-      state.deliveryId
+      state.deliveryId,
+      state.appliedCoupon,
+      new Date().toISOString()
     );
 
     const order: Order = {
@@ -205,6 +253,8 @@ export function CartProvider({
       customer: state.customer,
       delivery: computed.delivery,
       subtotal: computed.subtotal,
+      discount: computed.discount,
+      couponCode: computed.coupon?.code ?? null,
       frete: computed.frete,
       total: computed.total,
       points: computed.points,
@@ -214,7 +264,7 @@ export function CartProvider({
     dispatch({ type: "SET_LAST_ORDER", order });
     dispatch({ type: "CLEAR_ITEMS" });
     return order;
-  }, [items, products, state.customer, state.deliveryId]);
+  }, [items, products, state.customer, state.deliveryId, state.appliedCoupon]);
 
   const submitOrder = useCallback(async (): Promise<Order> => {
     if (isSupabaseConfigured()) {
@@ -223,6 +273,7 @@ export function CartProvider({
           items: items.map((it) => ({ productId: it.product.id, qty: it.qty })),
           customer: state.customer,
           deliveryId: state.deliveryId,
+          couponCode: state.appliedCoupon?.code,
         });
         // Guarda a referência (UUID) p/ destacar "você" no ranking depois.
         if (order.ref) {
@@ -243,7 +294,7 @@ export function CartProvider({
       }
     }
     return finalizeOrder();
-  }, [items, state.customer, state.deliveryId, finalizeOrder]);
+  }, [items, state.customer, state.deliveryId, state.appliedCoupon, finalizeOrder]);
 
   const startNewOrder = useCallback(() => {
     dispatch({ type: "SET_LAST_ORDER", order: null });
@@ -257,6 +308,7 @@ export function CartProvider({
       quantities: state.quantities,
       count,
       subtotal,
+      discount,
       frete,
       total,
       freteGratis,
@@ -264,11 +316,15 @@ export function CartProvider({
       deliveryId: state.deliveryId,
       deliveryOptions,
       selectedDelivery,
+      coupon: state.appliedCoupon,
+      couponHint,
       lastOrder: state.lastOrder,
       setQty,
       clearItems,
       patchCustomer,
       setDelivery,
+      applyCoupon,
+      removeCoupon,
       finalizeOrder,
       submitOrder,
       startNewOrder,
@@ -278,19 +334,24 @@ export function CartProvider({
       state.quantities,
       state.customer,
       state.deliveryId,
+      state.appliedCoupon,
       state.lastOrder,
       items,
       count,
       subtotal,
+      discount,
       frete,
       total,
       freteGratis,
       deliveryOptions,
       selectedDelivery,
+      couponHint,
       setQty,
       clearItems,
       patchCustomer,
       setDelivery,
+      applyCoupon,
+      removeCoupon,
       finalizeOrder,
       submitOrder,
       startNewOrder,

@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
+import type { Database } from "@/types/supabase";
 import { isSupabaseConfigured } from "./config";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,7 +20,7 @@ export function createReadClient() {
       "Supabase não configurado: defina NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY."
     );
   }
-  return createSupabaseClient(url, anonKey, {
+  return createSupabaseClient<Database>(url, anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }

@@ -34,6 +34,8 @@ No painel do Supabase, abra **SQL Editor** e rode, na ordem:
 1. `supabase/migrations/0001_catalog.sql` — `categories` e `products`.
 2. `supabase/migrations/0002_orders.sql` — `orders` e `order_items`.
 3. `supabase/migrations/0003_customers.sql` — `customers` + `orders.customer_id`.
+4. `supabase/migrations/0004_company.sql` — `company` (dados da loja).
+5. `supabase/migrations/0005_coupons.sql` — `coupons` + `orders.discount`/`coupon_code`.
 
 (ou, com a CLI do Supabase: `supabase db push`.)
 
@@ -102,6 +104,23 @@ O painel administrativo (CRUD de produtos e categorias) fica em `/admin`.
 - Admin de pedidos:
   - `/admin/pedidos` — filtro por status e "este mês"; nº abre o detalhe.
   - `/admin/pedidos/[id]` — itens, endereço, cliente vinculado, valores e status.
+
+## Cupons de desconto
+
+- A tabela `coupons` (migration `0005`) guarda código, tipo de desconto
+  (`percentage`/`fixed`), valor, regras mínimas (itens e subtotal), teto de
+  desconto, validade (`expires_at`), limite de usos (`max_uses`/`current_uses`)
+  e `active`. **RLS**: leitura pública só dos cupons ativos; escrita só via
+  Server Actions com `service_role`.
+- No checkout, o `CouponCard` aplica o cupom (a action `applyCoupon` valida
+  existência/ativo/validade/limite). O desconto é **reavaliado no servidor** em
+  `createOrder` (nunca confia no cliente): `total = subtotal − desconto + frete`,
+  frete grátis considera o subtotal **antes** do desconto e os pontos usam o
+  total **após** o desconto. Ao gravar o pedido, `current_uses` é incrementado.
+- Admin de cupons: `/admin/cupons` (lista), `/admin/cupons/novo` e
+  `/admin/cupons/[id]` (CRUD completo: ativo/inativo, mín. de itens, mín. de
+  subtotal, teto, validade e limite de usos).
+- Sem Supabase, os cupons usam o mock em `src/data/coupons.ts`.
 
 ## Como o código consome
 

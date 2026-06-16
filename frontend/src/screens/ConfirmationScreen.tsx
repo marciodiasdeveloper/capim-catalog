@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CircleCheckBig, PackageOpen, TriangleAlert } from "lucide-react";
 
 import { useCart } from "@/features/cart/useCart";
-import { COMPANY } from "@/data/company";
+import { useCompany } from "@/features/company/CompanyContext";
 import { buildOrderMessage, buildWaLink } from "@/lib/whatsapp";
 import { celebrate } from "@/lib/confetti";
 import { formatInt } from "@/lib/format";
@@ -26,6 +26,7 @@ const reveal = "animate-in fade-in slide-in-from-bottom-3 duration-500";
 /** Tela de confirmação: pedido recebido, dados de pagamento e ações de WhatsApp. */
 export function ConfirmationScreen() {
   const { lastOrder, hydrated } = useCart();
+  const company = useCompany();
   const celebratedRef = useRef(false);
 
   // Dispara o confetti uma única vez quando o pedido está disponível.
@@ -61,8 +62,8 @@ export function ConfirmationScreen() {
     );
   }
 
-  const message = buildOrderMessage(lastOrder, COMPANY);
-  const waLink = buildWaLink(COMPANY.whatsapp, message);
+  const message = buildOrderMessage(lastOrder, company);
+  const waLink = buildWaLink(company.whatsapp, message);
 
   return (
     <Container className="py-8">
@@ -90,6 +91,12 @@ export function ConfirmationScreen() {
               {lastOrder.points === 1 ? "ponto" : "pontos"} no ranking do mês 🎉
             </p>
           )}
+          {company.atendente && (
+            <p className="text-muted-foreground text-xs">
+              Atendimento:{" "}
+              <strong className="text-foreground">{company.atendente}</strong>
+            </p>
+          )}
         </div>
 
         <div
@@ -110,6 +117,18 @@ export function ConfirmationScreen() {
               </li>
             ))}
           </ul>
+
+          {lastOrder.discount > 0 && (
+            <div className="text-success mt-3 flex items-center justify-between gap-2 border-t pt-3 text-sm">
+              <span>
+                Desconto
+                {lastOrder.couponCode ? ` (${lastOrder.couponCode})` : ""}
+              </span>
+              <span className="shrink-0">
+                −<Money value={lastOrder.discount} className="text-success" />
+              </span>
+            </div>
+          )}
 
           {lastOrder.delivery && (
             <div className="text-muted-foreground mt-3 flex items-center justify-between gap-2 border-t pt-3 text-sm">

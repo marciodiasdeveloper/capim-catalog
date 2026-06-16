@@ -7,7 +7,7 @@ import { CategoryTabs } from "@/features/catalog/components/CategoryTabs";
 import { SearchBar } from "@/features/catalog/components/SearchBar";
 import { ProductList } from "@/features/catalog/components/ProductList";
 import { RankingBanner } from "@/features/gamification/components/RankingBanner";
-import { OrderSummary } from "@/features/cart/components/OrderSummary";
+import { CartItemsSection } from "@/features/cart/components/CartItemsSection";
 import { CustomerForm } from "@/features/cart/components/CustomerForm";
 import { Container } from "@/components/layout/Container";
 import { SectionTitle } from "@/components/ui/section-title";
@@ -77,7 +77,7 @@ export function CatalogScreen({
         >
           <Card className="lg:min-h-0">
             <CardContent className="space-y-4 lg:flex-1 lg:min-h-0 lg:overflow-y-auto scrollbar-thin">
-              <OrderSummary />
+              <CartItemsSection />
               <Separator />
               <CustomerForm />
             </CardContent>

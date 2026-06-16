@@ -6,12 +6,7 @@ import type { Category, Product } from "@/types";
 import { CATEGORIES as MOCK_CATEGORIES } from "@/data/categories";
 import { PRODUCTS as MOCK_PRODUCTS } from "@/data/products";
 import { createReadClient, isSupabaseConfigured } from "@/lib/supabase/server";
-import {
-  mapCategory,
-  mapProduct,
-  type CategoryRow,
-  type ProductRow,
-} from "./row-mappers";
+import { mapCategory, mapProduct } from "./row-mappers";
 
 /**
  * Repositório de catálogo. Lê do Supabase quando configurado; caso contrário
@@ -29,7 +24,7 @@ export const getCategories = cache(async (): Promise<Category[]> => {
     .order("sort_order", { ascending: true });
 
   if (error) throw new Error(`Erro ao carregar categorias: ${error.message}`);
-  return (data as CategoryRow[]).map(mapCategory);
+  return (data ?? []).map(mapCategory);
 });
 
 export const getProducts = cache(async (): Promise<Product[]> => {
@@ -43,7 +38,7 @@ export const getProducts = cache(async (): Promise<Product[]> => {
     .order("name", { ascending: true });
 
   if (error) throw new Error(`Erro ao carregar produtos: ${error.message}`);
-  return (data as ProductRow[]).map(mapProduct);
+  return (data ?? []).map(mapProduct);
 });
 
 /** Mapa productId → Product, usado pelo carrinho para reidratar itens salvos. */

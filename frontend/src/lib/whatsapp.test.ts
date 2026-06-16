@@ -4,7 +4,11 @@ import { buildOrderMessage, buildWaLink } from "./whatsapp";
 import type { Order } from "@/types";
 import type { Company } from "@/data/company";
 
-const company = { name: "Capim Farma", whatsapp: "553799447506" } as Company;
+const company = {
+  name: "Capim Farma",
+  whatsapp: "553799447506",
+  atendente: "Equipe Capim",
+} as Company;
 
 const baseOrder: Order = {
   id: "1280",
@@ -41,6 +45,8 @@ const baseOrder: Order = {
   },
   delivery: { label: "Sedex", price: 28, eta: "2 a 4 dias úteis" },
   subtotal: 31.5,
+  discount: 0,
+  couponCode: null,
   frete: 28,
   total: 59.5,
   points: 109,
@@ -69,6 +75,22 @@ describe("buildOrderMessage", () => {
     expect(msg).toContain("*Entrega:* Sedex");
     expect(msg).toContain("*Total:*");
     expect(msg).toContain("*Obs.:* sem pressa");
+  });
+
+  it("mostra a linha de desconto com o código do cupom", () => {
+    const withCoupon: Order = {
+      ...baseOrder,
+      discount: 5,
+      couponCode: "BEMVINDO10",
+      total: 54.5,
+    };
+    const msg = buildOrderMessage(withCoupon, company);
+    expect(msg).toContain("*Desconto (BEMVINDO10):* -");
+  });
+
+  it("omite a linha de desconto quando não há desconto", () => {
+    const msg = buildOrderMessage(baseOrder, company);
+    expect(msg).not.toContain("*Desconto");
   });
 
   it("retirada (frete 0, abaixo do limite) aparece como 'Sem frete'", () => {
@@ -106,6 +128,17 @@ describe("buildOrderMessage", () => {
     expect(msg).not.toContain("*Obs.:*");
     expect(msg).not.toContain("*Entrega:*");
     expect(msg).not.toContain("CEP ");
+  });
+
+  it("saúda o atendente quando informado", () => {
+    const msg = buildOrderMessage(baseOrder, company);
+    expect(msg).toContain("Olá, Equipe Capim!");
+  });
+
+  it("omite a saudação quando não há atendente", () => {
+    const semAtendente = { ...company, atendente: "" } as Company;
+    const msg = buildOrderMessage(baseOrder, semAtendente);
+    expect(msg).not.toContain("Olá,");
   });
 });
 

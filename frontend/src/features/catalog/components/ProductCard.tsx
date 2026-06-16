@@ -4,6 +4,7 @@ import { memo } from "react";
 
 import type { Category, Product } from "@/types";
 import { getUnitPrice } from "@/lib/pricing";
+import { stepQty } from "@/lib/cart";
 import { formatBRL } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -35,14 +36,8 @@ export const ProductCard = memo(function ProductCard({
     ?.map((t) => `${t.minQty}+ ${formatBRL(t.price)}`)
     .join(" · ");
 
-  // Garante 0 ou >= minQty: ao adicionar do zero, salta para o mínimo; ao
-  // reduzir abaixo do mínimo, zera (remove do pedido).
   function handleQtyChange(next: number) {
-    if (next <= 0) return onSetQty(product.id, 0);
-    if (next < product.minQty) {
-      return onSetQty(product.id, qty === 0 ? product.minQty : 0);
-    }
-    onSetQty(product.id, next);
+    onSetQty(product.id, stepQty(qty, next, product.minQty));
   }
 
   return (
