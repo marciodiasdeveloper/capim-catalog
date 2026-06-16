@@ -7,6 +7,8 @@
 E-commerce e gestão de pedidos para uma farmácia de bairro — catálogo com preço de atacado,
 checkout via **WhatsApp + PIX**, gamificação por ranking e painel administrativo completo.
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-capim--catalog.vercel.app-000000?logo=vercel&logoColor=white)](https://capim-catalog.vercel.app/)
+
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.9-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.4-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -15,6 +17,8 @@ checkout via **WhatsApp + PIX**, gamificação por ranking e painel administrati
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#-licença--aviso)
 
 **🇧🇷 Português · [🇬🇧 English](README_EN.md)**
+
+### 🔗 [Acessar a demo ao vivo →](https://capim-catalog.vercel.app/)
 
 </div>
 
@@ -137,6 +141,8 @@ capim-catalog/
 ```
 
 ## 🚀 Começando
+
+> 🌐 **Só quer ver rodando?** Acesse a **[demo ao vivo](https://capim-catalog.vercel.app/)** — sem instalar nada.
 
 **Pré-requisitos:** Node.js 20+ e pnpm.
 

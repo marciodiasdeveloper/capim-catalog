@@ -11,6 +11,8 @@ Toda a aplicação vive nesta pasta (`frontend/`).
 
 ## Rodando
 
+> 🌐 **Demo ao vivo:** <https://capim-catalog.vercel.app/>
+
 Pré-requisito: **pnpm** (o projeto usa `pnpm-lock.yaml` — não use npm/npx).
 
 ```bash
