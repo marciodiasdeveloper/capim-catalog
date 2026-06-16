@@ -10,15 +10,17 @@ The entire project is the Next.js app in `frontend/` (a nested `supabase/` holds
 
 ## Commands
 
+**Package manager: pnpm only — never npm/npx.** This repo uses `pnpm-lock.yaml`. Use `pnpm install`, the scripts below, and `pnpm dlx` instead of `npx`.
+
 ```bash
-npm run dev          # dev server on http://localhost:3002 (note: NOT 3000)
-npm run build        # next build
-npm run lint         # eslint (flat config in eslint.config.mjs)
-npm run seed         # tsx scripts/seed-supabase.ts — seed Supabase from src/data mocks
-npx tsc --noEmit     # typecheck (there is no test runner; rely on this + lint)
+pnpm dev               # dev server on http://localhost:3002 (note: NOT 3000)
+pnpm build             # next build
+pnpm lint              # eslint (flat config in eslint.config.mjs)
+pnpm seed              # tsx scripts/seed-supabase.ts — seed Supabase from src/data mocks
+pnpm exec tsc --noEmit # typecheck (there is no test runner; rely on this + lint)
 ```
 
-There are **no automated tests**. Verify changes with `npx tsc --noEmit`, `npm run lint`, and manual checks against `http://localhost:3002`. A dev server is typically already running on 3002.
+There are **no automated tests**. Verify changes with `pnpm exec tsc --noEmit`, `pnpm lint`, and manual checks against `http://localhost:3002`. A dev server is typically already running on 3002.
 
 Path alias: `@/*` → `./src/*`.
 
@@ -50,4 +52,4 @@ The order is never paid in-app. On `/confirmacao`, `src/lib/whatsapp.ts` builds 
 
 ## Supabase
 
-Schema migrations are in `frontend/supabase/migrations/` (`0001_catalog`, `0002_orders`, `0003_customers`); setup/admin instructions are in `frontend/supabase/README.md`. To enable: copy `.env.local.example` → `.env.local`, fill `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server-only — never expose), and `ADMIN_EMAILS`; run the migrations, then `npm run seed`. Admin users must also exist in Supabase Auth → Users.
+Schema migrations are in `frontend/supabase/migrations/` (`0001_catalog`, `0002_orders`, `0003_customers`); setup/admin instructions are in `frontend/supabase/README.md`. To enable: copy `.env.local.example` → `.env.local`, fill `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server-only — never expose), and `ADMIN_EMAILS`; run the migrations, then `pnpm seed`. Admin users must also exist in Supabase Auth → Users.
