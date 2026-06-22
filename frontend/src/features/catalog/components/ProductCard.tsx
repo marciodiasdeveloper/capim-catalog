@@ -5,6 +5,7 @@ import { memo } from "react";
 import type { Category, Product } from "@/types";
 import { getUnitPrice } from "@/lib/pricing";
 import { stepQty } from "@/lib/cart";
+import { track, shouldTrackAdd } from "@/lib/analytics/track";
 import { formatBRL } from "@/lib/format";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +38,12 @@ export const ProductCard = memo(function ProductCard({
     .join(" · ");
 
   function handleQtyChange(next: number) {
-    onSetQty(product.id, stepQty(qty, next, product.minQty));
+    const clamped = stepQty(qty, next, product.minQty);
+    // Conta como "adição ao carrinho" só quando a quantidade aumenta.
+    if (shouldTrackAdd(qty, clamped)) {
+      track({ type: "add_to_cart", productId: product.id, qty: clamped - qty });
+    }
+    onSetQty(product.id, clamped);
   }
 
   return (

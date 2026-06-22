@@ -25,6 +25,8 @@ export default defineConfig({
         "src/lib/cep.ts",
         "src/lib/whatsapp.ts",
         "src/lib/supabase/config.ts",
+        "src/lib/analytics/track.ts",
+        "src/lib/analytics/funnel.ts",
         "src/data/shipping.ts",
         "src/features/cart/cart-reducer.ts",
       ],

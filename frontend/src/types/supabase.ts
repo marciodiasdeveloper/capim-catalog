@@ -360,6 +360,45 @@ export interface Database {
         };
         Relationships: [];
       };
+      analytics_events: {
+        Row: {
+          id: string;
+          type: "page_view" | "product_view" | "add_to_cart" | "begin_checkout";
+          session_id: string;
+          product_id: string | null;
+          path: string | null;
+          qty: number | null;
+          uf: string | null;
+          referrer: string | null;
+          user_agent: string | null;
+          created_at: Ts;
+        };
+        Insert: {
+          id?: string;
+          type: "page_view" | "product_view" | "add_to_cart" | "begin_checkout";
+          session_id: string;
+          product_id?: string | null;
+          path?: string | null;
+          qty?: number | null;
+          uf?: string | null;
+          referrer?: string | null;
+          user_agent?: string | null;
+          created_at?: Ts;
+        };
+        Update: {
+          id?: string;
+          type?: "page_view" | "product_view" | "add_to_cart" | "begin_checkout";
+          session_id?: string;
+          product_id?: string | null;
+          path?: string | null;
+          qty?: number | null;
+          uf?: string | null;
+          referrer?: string | null;
+          user_agent?: string | null;
+          created_at?: Ts;
+        };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };

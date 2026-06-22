@@ -3,14 +3,22 @@ import { getAdminOrders } from "@/server/admin/order-queries";
 import { getAdminCustomers } from "@/server/admin/customer-queries";
 import { getMonthlyRanking } from "@/server/orders/ranking";
 import {
+  getCatalogCoverage,
+  getConversionFunnel,
   getCouponStats,
   getCustomersByState,
   getDailyTrend,
   getGrowthSummary,
+  getMostAddedToCart,
   getOpenOrdersOverview,
+  getOrdersHeatmap,
+  getPendingRecovery,
   getRetentionOverview,
   getRevenueByCategory,
   getTopProducts,
+  getTrafficOverview,
+  getTrafficTrend,
+  getWholesaleMix,
 } from "@/server/admin/dashboard-queries";
 import { AdminDashboardScreen } from "@/screens/AdminDashboardScreen";
 
@@ -29,6 +37,14 @@ export default async function AdminDashboardPage() {
     byState,
     customers,
     ranking,
+    traffic,
+    trafficTrend,
+    mostAdded,
+    funnel,
+    heatmap,
+    wholesaleMix,
+    catalogCoverage,
+    pendingRecovery,
   ] = await Promise.all([
     getCompany(),
     getAdminOrders({ status: "pending" }),
@@ -42,6 +58,14 @@ export default async function AdminDashboardPage() {
     getCustomersByState(),
     getAdminCustomers(),
     getMonthlyRanking(),
+    getTrafficOverview(),
+    getTrafficTrend(30),
+    getMostAddedToCart(8),
+    getConversionFunnel(),
+    getOrdersHeatmap(),
+    getWholesaleMix(),
+    getCatalogCoverage(),
+    getPendingRecovery(),
   ]);
 
   const topCustomers = [...customers]
@@ -64,6 +88,14 @@ export default async function AdminDashboardPage() {
       byState={byState}
       topCustomers={topCustomers}
       podium={ranking}
+      traffic={traffic}
+      trafficTrend={trafficTrend}
+      mostAdded={mostAdded}
+      funnel={funnel}
+      heatmap={heatmap}
+      wholesaleMix={wholesaleMix}
+      catalogCoverage={catalogCoverage}
+      pendingRecovery={pendingRecovery}
     />
   );
 }

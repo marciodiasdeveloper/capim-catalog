@@ -16,6 +16,7 @@ import {
   onlyDigits,
 } from "@/lib/format";
 import { lookupCep } from "@/lib/cep";
+import { track } from "@/lib/analytics/track";
 import {
   hasErrors,
   validateCustomer,
@@ -118,6 +119,8 @@ export function CustomerForm() {
     }
 
     setSubmitting(true);
+    // Tentativa real de checkout (validações passaram) — registra antes de enviar.
+    track({ type: "begin_checkout", uf: customer.uf || undefined });
     try {
       await submitOrder();
       router.push("/confirmacao");

@@ -4,10 +4,17 @@ import {
   AlarmClock,
   ArrowRight,
   BadgeCheck,
+  Boxes,
   CircleCheck,
+  Clock,
+  Eye,
   Inbox,
+  MousePointerClick,
   PackageOpen,
+  PackageX,
+  Percent,
   Repeat,
+  ShoppingCart,
   Ticket,
   TrendingUp,
   UserPlus,
@@ -20,21 +27,32 @@ import type { RankedUser } from "@/data/ranking";
 import type { AdminOrder } from "@/server/admin/order-queries";
 import type { AdminCustomer } from "@/server/admin/customer-queries";
 import type {
+  AddedToCartProduct,
   AgingBuckets,
+  CatalogCoverage,
   CategoryRevenue,
+  ConversionFunnel,
   CouponStats,
   DailyPoint,
   GrowthSummary,
   OpenOrdersOverview,
+  OrdersHeatmap,
+  PendingRecovery,
   RetentionOverview,
   StateDistribution,
   TopProduct,
+  TrafficOverview,
+  TrafficPoint,
+  WholesaleMix,
 } from "@/server/admin/dashboard-queries";
 import { currentMonthLabel, formatInt, pluralize } from "@/lib/format";
 
 import { StatCard } from "@/features/admin/dashboard/StatCard";
 import { OpenOrdersTable } from "@/features/admin/dashboard/OpenOrdersTable";
 import { TrendChart } from "@/features/admin/dashboard/charts/TrendChart";
+import { TrafficTrendChart } from "@/features/admin/dashboard/charts/TrafficTrendChart";
+import { MostAddedToCartChart } from "@/features/admin/dashboard/charts/MostAddedToCartChart";
+import { FunnelChart } from "@/features/admin/dashboard/charts/FunnelChart";
 import { RevenueByCategoryChart } from "@/features/admin/dashboard/charts/RevenueByCategoryChart";
 import { TopProductsChart } from "@/features/admin/dashboard/charts/TopProductsChart";
 import { NewVsReturningChart } from "@/features/admin/dashboard/charts/NewVsReturningChart";
@@ -72,6 +90,14 @@ export interface AdminDashboardScreenProps {
   byState: StateDistribution[];
   topCustomers: AdminCustomer[];
   podium: RankedUser[];
+  traffic: TrafficOverview;
+  trafficTrend: TrafficPoint[];
+  mostAdded: AddedToCartProduct[];
+  funnel: ConversionFunnel;
+  heatmap: OrdersHeatmap;
+  wholesaleMix: WholesaleMix;
+  catalogCoverage: CatalogCoverage;
+  pendingRecovery: PendingRecovery;
 }
 
 export function AdminDashboardScreen({
@@ -88,6 +114,14 @@ export function AdminDashboardScreen({
   byState,
   topCustomers,
   podium,
+  traffic,
+  trafficTrend,
+  mostAdded,
+  funnel,
+  heatmap,
+  wholesaleMix,
+  catalogCoverage,
+  pendingRecovery,
 }: AdminDashboardScreenProps) {
   const monthLabel = currentMonthLabel();
   const novos = Math.max(
@@ -95,6 +129,11 @@ export function AdminDashboardScreen({
     retention.clientesPagantes - retention.clientesRecorrentes
   );
   const hasTrend = trend.some((p) => p.pedidos > 0);
+  const hasTraffic =
+    traffic.pageViewsMonth > 0 || trafficTrend.some((p) => p.visits > 0);
+  const hasFunnel = (funnel.stages[0]?.value ?? 0) > 0;
+  const wholesaleTotal =
+    wholesaleMix.wholesaleRevenue + wholesaleMix.retailRevenue;
   const monthHasOrders =
     overview.monthByStatus.pending +
       overview.monthByStatus.paid +
@@ -221,6 +260,188 @@ export function AdminDashboardScreen({
           <ChartEmpty title="Sem vendas no período" />
         )}
       </Panel>
+
+      {/* Comportamento & tráfego */}
+      <div className="space-y-4">
+        <SectionTitle as="h2" description="Acessos, carrinho e conversão (rastreamento anônimo).">
+          Comportamento & tráfego
+        </SectionTitle>
+
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard
+            label="Visitas hoje"
+            value={formatInt(traffic.visitsToday)}
+            icon={<Eye />}
+            hint="sessões únicas"
+          />
+          <StatCard
+            label="Visitas no mês"
+            value={formatInt(traffic.visitsMonth)}
+            delta={traffic.deltas.visits}
+            icon={<Eye />}
+            hint={monthLabel}
+          />
+          <StatCard
+            label="Páginas vistas hoje"
+            value={formatInt(traffic.pageViewsToday)}
+            icon={<MousePointerClick />}
+          />
+          <StatCard
+            label="Conversão"
+            value={`${Math.round(funnel.overall)}%`}
+            icon={<Percent />}
+            hint="visita → pedido pago"
+          />
+        </div>
+
+        <Panel
+          title="Tráfego — últimos 30 dias"
+          description="Visitas e páginas vistas por dia."
+        >
+          {hasTraffic ? (
+            <TrafficTrendChart data={trafficTrend} />
+          ) : (
+            <ChartEmpty
+              icon={<Eye />}
+              title="Sem acessos registrados"
+              description="Os eventos de tráfego aparecem aqui assim que a loja receber visitas."
+            />
+          )}
+        </Panel>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Panel title="Mais adicionados ao carrinho" description={monthLabel}>
+            {mostAdded.length ? (
+              <MostAddedToCartChart data={mostAdded} />
+            ) : (
+              <ChartEmpty
+                icon={<ShoppingCart />}
+                title="Nenhuma adição ao carrinho"
+                description="Ainda não há adições ao carrinho neste mês."
+              />
+            )}
+          </Panel>
+          <Panel
+            title="Funil de conversão"
+            description={`Conversão geral de ${Math.round(funnel.overall)}% · ${monthLabel}`}
+          >
+            {hasFunnel ? (
+              <FunnelChart stages={funnel.stages} />
+            ) : (
+              <ChartEmpty title="Sem dados de funil neste mês" />
+            )}
+          </Panel>
+        </div>
+      </div>
+
+      {/* Insights operacionais */}
+      <div className="space-y-4">
+        <SectionTitle as="h2" description="Padrões dos pedidos para agir.">
+          Insights operacionais
+        </SectionTitle>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Panel
+            title="Horário de pico"
+            description={
+              heatmap.total > 0
+                ? `Pico: ${WEEKDAYS[heatmap.peakWeekday]} às ${String(heatmap.peakHour).padStart(2, "0")}h (BRT)`
+                : "Pedidos pagos por dia e hora."
+            }
+          >
+            {heatmap.total > 0 ? (
+              <HeatmapGrid data={heatmap} />
+            ) : (
+              <ChartEmpty
+                icon={<Clock />}
+                title="Sem pedidos pagos ainda"
+              />
+            )}
+          </Panel>
+          <Panel title="Atacado vs varejo" description={monthLabel}>
+            {wholesaleTotal > 0 ? (
+              <WholesaleSplit mix={wholesaleMix} />
+            ) : (
+              <ChartEmpty
+                icon={<Boxes />}
+                title="Sem vendas pagas neste mês"
+              />
+            )}
+          </Panel>
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Panel
+            title="Cobertura do catálogo"
+            description="Produtos ativos sem vendas nos últimos 90 dias."
+          >
+            {catalogCoverage.totalActive > 0 ? (
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-6">
+                  <Metric
+                    label="Com vendas"
+                    value={formatInt(catalogCoverage.soldCount)}
+                    hint={`de ${formatInt(catalogCoverage.totalActive)} ativos`}
+                  />
+                  <Metric
+                    label="Sem vendas"
+                    value={formatInt(catalogCoverage.zeroSalesCount)}
+                    hint="90 dias"
+                  />
+                </div>
+                {catalogCoverage.zeroSales.length ? (
+                  <ul className="flex flex-wrap gap-1.5">
+                    {catalogCoverage.zeroSales.map((p) => (
+                      <li
+                        key={p.id}
+                        className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-xs"
+                      >
+                        {p.name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-success text-xs">
+                    Todos os produtos ativos venderam no período. 🎉
+                  </p>
+                )}
+              </div>
+            ) : (
+              <ChartEmpty
+                icon={<PackageX />}
+                title="Nenhum produto ativo"
+              />
+            )}
+          </Panel>
+          <Panel
+            title="Recuperação de pendentes"
+            description="Valor parado em pedidos não pagos."
+          >
+            {pendingRecovery.recoverableCount > 0 ? (
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-6">
+                  <Metric
+                    label="A recuperar"
+                    value={<Money value={pendingRecovery.recoverableValue} />}
+                    hint={pluralize(
+                      pendingRecovery.recoverableCount,
+                      "pedido",
+                      "pedidos"
+                    )}
+                  />
+                </div>
+                <RecoveryBars aging={pendingRecovery.agingValue} />
+              </div>
+            ) : (
+              <ChartEmpty
+                icon={<Wallet />}
+                title="Nenhum pedido pendente"
+                description="Tudo em dia — sem valores a cobrar."
+              />
+            )}
+          </Panel>
+        </div>
+      </div>
 
       {/* Categoria + produtos */}
       <div className="grid gap-4 lg:grid-cols-2">
@@ -511,6 +732,105 @@ function AgingBars({ buckets }: { buckets: AgingBuckets }) {
           <div className="flex justify-between">
             <span className="text-muted-foreground">{r.label}</span>
             <span className="tabular-nums">{r.value}</span>
+          </div>
+          <div className="bg-muted h-1.5 overflow-hidden rounded-full">
+            <div
+              className="h-full rounded-full"
+              style={{ width: `${(r.value / max) * 100}%`, backgroundColor: r.color }}
+            />
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+function HeatmapGrid({ data }: { data: OrdersHeatmap }) {
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-max space-y-0.5">
+        {data.grid.map((row, wd) => (
+          <div key={wd} className="flex items-center gap-1">
+            <span className="text-muted-foreground w-8 shrink-0 text-[10px]">
+              {WEEKDAYS[wd]}
+            </span>
+            <div className="flex gap-0.5">
+              {row.map((count, h) => (
+                <div
+                  key={h}
+                  title={`${WEEKDAYS[wd]} ${String(h).padStart(2, "0")}h — ${pluralize(count, "pedido", "pedidos")}`}
+                  className="size-3 rounded-[2px]"
+                  style={{
+                    backgroundColor: count > 0 ? "var(--chart-1)" : "var(--muted)",
+                    opacity:
+                      count > 0 && data.max > 0
+                        ? 0.25 + 0.75 * (count / data.max)
+                        : 1,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+        <div className="flex items-center gap-1 pt-0.5">
+          <span className="w-8 shrink-0" />
+          <div className="flex gap-0.5">
+            {Array.from({ length: 24 }).map((_, h) => (
+              <span
+                key={h}
+                className="text-muted-foreground size-3 text-center text-[8px] leading-3"
+              >
+                {h % 6 === 0 ? h : ""}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WholesaleSplit({ mix }: { mix: WholesaleMix }) {
+  const retailPct = Math.max(0, 100 - mix.wholesalePct);
+  return (
+    <div className="space-y-4">
+      <div className="bg-muted flex h-3 overflow-hidden rounded-full">
+        <div style={{ width: `${mix.wholesalePct}%`, backgroundColor: "var(--chart-1)" }} />
+        <div style={{ width: `${retailPct}%`, backgroundColor: "var(--chart-4)" }} />
+      </div>
+      <div className="flex flex-wrap gap-6">
+        <Metric
+          label="Atacado"
+          value={<Money value={mix.wholesaleRevenue} />}
+          hint={`${formatInt(mix.wholesaleUnits)} un · ${Math.round(mix.wholesalePct)}%`}
+        />
+        <Metric
+          label="Varejo"
+          value={<Money value={mix.retailRevenue} />}
+          hint={`${formatInt(mix.retailUnits)} un · ${Math.round(retailPct)}%`}
+        />
+      </div>
+    </div>
+  );
+}
+
+function RecoveryBars({ aging }: { aging: PendingRecovery["agingValue"] }) {
+  const rows = [
+    { label: "Menos de 6h", value: aging.lt6h, color: "var(--muted-foreground)" },
+    { label: "6–24h", value: aging.h6to24, color: "var(--warning)" },
+    { label: "24–48h", value: aging.h24to48, color: "var(--destructive)" },
+    { label: "Mais de 48h", value: aging.gt48, color: "var(--destructive)" },
+  ];
+  const max = Math.max(1, ...rows.map((r) => r.value));
+  return (
+    <ul className="space-y-2 text-xs">
+      {rows.map((r) => (
+        <li key={r.label} className="space-y-1">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">{r.label}</span>
+            <Money value={r.value} className="tabular-nums" />
           </div>
           <div className="bg-muted h-1.5 overflow-hidden rounded-full">
             <div
