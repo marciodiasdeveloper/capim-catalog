@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { getCompany } from "@/server/company";
 import { requireAdmin } from "@/lib/supabase/auth";
@@ -53,7 +54,9 @@ export default async function AdminPanelLayout({
       </header>
 
       <main className="flex-1">
-        <Container className="py-8">{children}</Container>
+        <Container className="py-8">
+          <NuqsAdapter>{children}</NuqsAdapter>
+        </Container>
       </main>
     </div>
   );

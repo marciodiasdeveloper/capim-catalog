@@ -6,6 +6,7 @@ import {
   BadgeCheck,
   Boxes,
   CircleCheck,
+  ClipboardList,
   Clock,
   Eye,
   Inbox,
@@ -49,6 +50,7 @@ import { currentMonthLabel, formatInt, pluralize } from "@/lib/format";
 
 import { StatCard } from "@/features/admin/dashboard/StatCard";
 import { OpenOrdersTable } from "@/features/admin/dashboard/OpenOrdersTable";
+import { DashboardTabs } from "@/features/admin/dashboard/DashboardTabs";
 import { TrendChart } from "@/features/admin/dashboard/charts/TrendChart";
 import { TrafficTrendChart } from "@/features/admin/dashboard/charts/TrafficTrendChart";
 import { MostAddedToCartChart } from "@/features/admin/dashboard/charts/MostAddedToCartChart";
@@ -140,22 +142,9 @@ export function AdminDashboardScreen({
       overview.monthByStatus.cancelled >
     0;
 
-  return (
+  // ---------------------------------------------------------------- Operação
+  const operacaoTab = (
     <div className="space-y-8">
-      <div className="space-y-1">
-        <SectionTitle
-          as="h1"
-          description="Visão geral da operação e indicadores do mês."
-        >
-          Dashboard
-        </SectionTitle>
-        <p className="text-muted-foreground text-xs">
-          Valores reconhecidos pela data de criação do pedido — o sistema não
-          registra a data de pagamento.
-        </p>
-      </div>
-
-      {/* Operacional */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         <StatCard
           label="Pedidos em aberto"
@@ -187,38 +176,6 @@ export function AdminDashboardScreen({
         />
       </div>
 
-      {/* Crescimento */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard
-          label="Faturamento"
-          value={<Money value={growth.current.faturamento} />}
-          delta={growth.deltas.faturamento}
-          icon={<TrendingUp />}
-          hint={monthLabel}
-        />
-        <StatCard
-          label="Pedidos pagos"
-          value={formatInt(growth.current.pedidos)}
-          delta={growth.deltas.pedidos}
-          icon={<BadgeCheck />}
-          hint="no mês"
-        />
-        <StatCard
-          label="Ticket médio"
-          value={<Money value={growth.current.aov} />}
-          delta={growth.deltas.aov}
-          icon={<Wallet />}
-        />
-        <StatCard
-          label="Itens vendidos"
-          value={formatInt(growth.current.itensVendidos)}
-          delta={growth.deltas.itensVendidos}
-          icon={<PackageOpen />}
-          hint="no mês"
-        />
-      </div>
-
-      {/* Fila de pedidos em aberto + lateral */}
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Panel
@@ -249,7 +206,69 @@ export function AdminDashboardScreen({
         </div>
       </div>
 
-      {/* Tendência */}
+      <Panel
+        title="Recuperação de pendentes"
+        description="Valor parado em pedidos não pagos — cobre pelo WhatsApp."
+      >
+        {pendingRecovery.recoverableCount > 0 ? (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-6">
+              <Metric
+                label="A recuperar"
+                value={<Money value={pendingRecovery.recoverableValue} />}
+                hint={pluralize(
+                  pendingRecovery.recoverableCount,
+                  "pedido",
+                  "pedidos"
+                )}
+              />
+            </div>
+            <RecoveryBars aging={pendingRecovery.agingValue} />
+          </div>
+        ) : (
+          <ChartEmpty
+            icon={<Wallet />}
+            title="Nenhum pedido pendente"
+            description="Tudo em dia — sem valores a cobrar."
+          />
+        )}
+      </Panel>
+    </div>
+  );
+
+  // ------------------------------------------------------------------ Vendas
+  const vendasTab = (
+    <div className="space-y-8">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          label="Faturamento"
+          value={<Money value={growth.current.faturamento} />}
+          delta={growth.deltas.faturamento}
+          icon={<TrendingUp />}
+          hint={monthLabel}
+        />
+        <StatCard
+          label="Pedidos pagos"
+          value={formatInt(growth.current.pedidos)}
+          delta={growth.deltas.pedidos}
+          icon={<BadgeCheck />}
+          hint="no mês"
+        />
+        <StatCard
+          label="Ticket médio"
+          value={<Money value={growth.current.aov} />}
+          delta={growth.deltas.aov}
+          icon={<Wallet />}
+        />
+        <StatCard
+          label="Itens vendidos"
+          value={formatInt(growth.current.itensVendidos)}
+          delta={growth.deltas.itensVendidos}
+          icon={<PackageOpen />}
+          hint="no mês"
+        />
+      </div>
+
       <Panel
         title="Faturamento — últimos 30 dias"
         description="Pedidos pagos por dia."
@@ -261,189 +280,6 @@ export function AdminDashboardScreen({
         )}
       </Panel>
 
-      {/* Comportamento & tráfego */}
-      <div className="space-y-4">
-        <SectionTitle as="h2" description="Acessos, carrinho e conversão (rastreamento anônimo).">
-          Comportamento & tráfego
-        </SectionTitle>
-
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <StatCard
-            label="Visitas hoje"
-            value={formatInt(traffic.visitsToday)}
-            icon={<Eye />}
-            hint="sessões únicas"
-          />
-          <StatCard
-            label="Visitas no mês"
-            value={formatInt(traffic.visitsMonth)}
-            delta={traffic.deltas.visits}
-            icon={<Eye />}
-            hint={monthLabel}
-          />
-          <StatCard
-            label="Páginas vistas hoje"
-            value={formatInt(traffic.pageViewsToday)}
-            icon={<MousePointerClick />}
-          />
-          <StatCard
-            label="Conversão"
-            value={`${Math.round(funnel.overall)}%`}
-            icon={<Percent />}
-            hint="visita → pedido pago"
-          />
-        </div>
-
-        <Panel
-          title="Tráfego — últimos 30 dias"
-          description="Visitas e páginas vistas por dia."
-        >
-          {hasTraffic ? (
-            <TrafficTrendChart data={trafficTrend} />
-          ) : (
-            <ChartEmpty
-              icon={<Eye />}
-              title="Sem acessos registrados"
-              description="Os eventos de tráfego aparecem aqui assim que a loja receber visitas."
-            />
-          )}
-        </Panel>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Panel title="Mais adicionados ao carrinho" description={monthLabel}>
-            {mostAdded.length ? (
-              <MostAddedToCartChart data={mostAdded} />
-            ) : (
-              <ChartEmpty
-                icon={<ShoppingCart />}
-                title="Nenhuma adição ao carrinho"
-                description="Ainda não há adições ao carrinho neste mês."
-              />
-            )}
-          </Panel>
-          <Panel
-            title="Funil de conversão"
-            description={`Conversão geral de ${Math.round(funnel.overall)}% · ${monthLabel}`}
-          >
-            {hasFunnel ? (
-              <FunnelChart stages={funnel.stages} />
-            ) : (
-              <ChartEmpty title="Sem dados de funil neste mês" />
-            )}
-          </Panel>
-        </div>
-      </div>
-
-      {/* Insights operacionais */}
-      <div className="space-y-4">
-        <SectionTitle as="h2" description="Padrões dos pedidos para agir.">
-          Insights operacionais
-        </SectionTitle>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Panel
-            title="Horário de pico"
-            description={
-              heatmap.total > 0
-                ? `Pico: ${WEEKDAYS[heatmap.peakWeekday]} às ${String(heatmap.peakHour).padStart(2, "0")}h (BRT)`
-                : "Pedidos pagos por dia e hora."
-            }
-          >
-            {heatmap.total > 0 ? (
-              <HeatmapGrid data={heatmap} />
-            ) : (
-              <ChartEmpty
-                icon={<Clock />}
-                title="Sem pedidos pagos ainda"
-              />
-            )}
-          </Panel>
-          <Panel title="Atacado vs varejo" description={monthLabel}>
-            {wholesaleTotal > 0 ? (
-              <WholesaleSplit mix={wholesaleMix} />
-            ) : (
-              <ChartEmpty
-                icon={<Boxes />}
-                title="Sem vendas pagas neste mês"
-              />
-            )}
-          </Panel>
-        </div>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Panel
-            title="Cobertura do catálogo"
-            description="Produtos ativos sem vendas nos últimos 90 dias."
-          >
-            {catalogCoverage.totalActive > 0 ? (
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-6">
-                  <Metric
-                    label="Com vendas"
-                    value={formatInt(catalogCoverage.soldCount)}
-                    hint={`de ${formatInt(catalogCoverage.totalActive)} ativos`}
-                  />
-                  <Metric
-                    label="Sem vendas"
-                    value={formatInt(catalogCoverage.zeroSalesCount)}
-                    hint="90 dias"
-                  />
-                </div>
-                {catalogCoverage.zeroSales.length ? (
-                  <ul className="flex flex-wrap gap-1.5">
-                    {catalogCoverage.zeroSales.map((p) => (
-                      <li
-                        key={p.id}
-                        className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-xs"
-                      >
-                        {p.name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-success text-xs">
-                    Todos os produtos ativos venderam no período. 🎉
-                  </p>
-                )}
-              </div>
-            ) : (
-              <ChartEmpty
-                icon={<PackageX />}
-                title="Nenhum produto ativo"
-              />
-            )}
-          </Panel>
-          <Panel
-            title="Recuperação de pendentes"
-            description="Valor parado em pedidos não pagos."
-          >
-            {pendingRecovery.recoverableCount > 0 ? (
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-6">
-                  <Metric
-                    label="A recuperar"
-                    value={<Money value={pendingRecovery.recoverableValue} />}
-                    hint={pluralize(
-                      pendingRecovery.recoverableCount,
-                      "pedido",
-                      "pedidos"
-                    )}
-                  />
-                </div>
-                <RecoveryBars aging={pendingRecovery.agingValue} />
-              </div>
-            ) : (
-              <ChartEmpty
-                icon={<Wallet />}
-                title="Nenhum pedido pendente"
-                description="Tudo em dia — sem valores a cobrar."
-              />
-            )}
-          </Panel>
-        </div>
-      </div>
-
-      {/* Categoria + produtos */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Receita por categoria" description={monthLabel}>
           {categoryRevenue.length ? (
@@ -461,7 +297,6 @@ export function AdminDashboardScreen({
         </Panel>
       </div>
 
-      {/* Cupons + operação */}
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Cupons & desconto" description={monthLabel}>
           {couponStats.ordersWithCoupon > 0 ? (
@@ -531,7 +366,152 @@ export function AdminDashboardScreen({
         </Panel>
       </div>
 
-      {/* Retenção */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Panel title="Atacado vs varejo" description={monthLabel}>
+          {wholesaleTotal > 0 ? (
+            <WholesaleSplit mix={wholesaleMix} />
+          ) : (
+            <ChartEmpty
+              icon={<Boxes />}
+              title="Sem vendas pagas neste mês"
+            />
+          )}
+        </Panel>
+        <Panel
+          title="Cobertura do catálogo"
+          description="Produtos ativos sem vendas nos últimos 90 dias."
+        >
+          {catalogCoverage.totalActive > 0 ? (
+            <div className="space-y-4">
+              <div className="flex flex-wrap gap-6">
+                <Metric
+                  label="Com vendas"
+                  value={formatInt(catalogCoverage.soldCount)}
+                  hint={`de ${formatInt(catalogCoverage.totalActive)} ativos`}
+                />
+                <Metric
+                  label="Sem vendas"
+                  value={formatInt(catalogCoverage.zeroSalesCount)}
+                  hint="90 dias"
+                />
+              </div>
+              {catalogCoverage.zeroSales.length ? (
+                <ul className="flex flex-wrap gap-1.5">
+                  {catalogCoverage.zeroSales.map((p) => (
+                    <li
+                      key={p.id}
+                      className="bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-xs"
+                    >
+                      {p.name}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-success text-xs">
+                  Todos os produtos ativos venderam no período. 🎉
+                </p>
+              )}
+            </div>
+          ) : (
+            <ChartEmpty
+              icon={<PackageX />}
+              title="Nenhum produto ativo"
+            />
+          )}
+        </Panel>
+      </div>
+    </div>
+  );
+
+  // -------------------------------------------------- Tráfego & comportamento
+  const trafegoTab = (
+    <div className="space-y-8">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard
+          label="Visitas hoje"
+          value={formatInt(traffic.visitsToday)}
+          icon={<Eye />}
+          hint="sessões únicas"
+        />
+        <StatCard
+          label="Visitas no mês"
+          value={formatInt(traffic.visitsMonth)}
+          delta={traffic.deltas.visits}
+          icon={<Eye />}
+          hint={monthLabel}
+        />
+        <StatCard
+          label="Páginas vistas hoje"
+          value={formatInt(traffic.pageViewsToday)}
+          icon={<MousePointerClick />}
+        />
+        <StatCard
+          label="Conversão"
+          value={`${Math.round(funnel.overall)}%`}
+          icon={<Percent />}
+          hint="visita → pedido pago"
+        />
+      </div>
+
+      <Panel
+        title="Tráfego — últimos 30 dias"
+        description="Visitas e páginas vistas por dia."
+      >
+        {hasTraffic ? (
+          <TrafficTrendChart data={trafficTrend} />
+        ) : (
+          <ChartEmpty
+            icon={<Eye />}
+            title="Sem acessos registrados"
+            description="Os eventos de tráfego aparecem aqui assim que a loja receber visitas."
+          />
+        )}
+      </Panel>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Panel title="Mais adicionados ao carrinho" description={monthLabel}>
+          {mostAdded.length ? (
+            <MostAddedToCartChart data={mostAdded} />
+          ) : (
+            <ChartEmpty
+              icon={<ShoppingCart />}
+              title="Nenhuma adição ao carrinho"
+              description="Ainda não há adições ao carrinho neste mês."
+            />
+          )}
+        </Panel>
+        <Panel
+          title="Funil de conversão"
+          description={`Conversão geral de ${Math.round(funnel.overall)}% · ${monthLabel}`}
+        >
+          {hasFunnel ? (
+            <FunnelChart stages={funnel.stages} />
+          ) : (
+            <ChartEmpty title="Sem dados de funil neste mês" />
+          )}
+        </Panel>
+      </div>
+
+      <Panel
+        title="Horário de pico"
+        description={
+          heatmap.total > 0
+            ? `Pico: ${WEEKDAYS[heatmap.peakWeekday]} às ${String(heatmap.peakHour).padStart(2, "0")}h (BRT)`
+            : "Pedidos pagos por dia e hora."
+        }
+      >
+        {heatmap.total > 0 ? (
+          <HeatmapGrid data={heatmap} />
+        ) : (
+          <ChartEmpty icon={<Clock />} title="Sem pedidos pagos ainda" />
+        )}
+      </Panel>
+    </div>
+  );
+
+  // ---------------------------------------------------------------- Clientes
+  const clientesTab = (
+    <div className="space-y-8">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
           label="Clientes pagantes"
@@ -640,8 +620,54 @@ export function AdminDashboardScreen({
           </div>
         </Panel>
       ) : null}
+    </div>
+  );
 
-      {/* Atalhos */}
+  return (
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <SectionTitle
+          as="h1"
+          description="Visão geral da operação e indicadores do mês."
+        >
+          Dashboard
+        </SectionTitle>
+        <p className="text-muted-foreground text-xs">
+          Valores reconhecidos pela data de criação do pedido — o sistema não
+          registra a data de pagamento.
+        </p>
+      </div>
+
+      <DashboardTabs
+        tabs={[
+          {
+            value: "operacao",
+            label: "Operação",
+            icon: <ClipboardList />,
+            content: operacaoTab,
+          },
+          {
+            value: "vendas",
+            label: "Vendas",
+            icon: <TrendingUp />,
+            content: vendasTab,
+          },
+          {
+            value: "trafego",
+            label: "Tráfego",
+            icon: <Eye />,
+            content: trafegoTab,
+          },
+          {
+            value: "clientes",
+            label: "Clientes",
+            icon: <Users />,
+            content: clientesTab,
+          },
+        ]}
+      />
+
+      {/* Atalhos — sempre visíveis */}
       <div className="flex flex-wrap gap-2">
         <Link
           href="/admin/pedidos?status=pending"
