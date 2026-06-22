@@ -1,5 +1,6 @@
 import { getProductsById } from "@/server/catalog";
 import { getCompany } from "@/server/company";
+import { getAdminUser } from "@/lib/supabase/auth";
 import { CartProvider } from "@/features/cart/CartContext";
 import { CompanyProvider } from "@/features/company/CompanyContext";
 import { PageViewTracker } from "@/features/analytics/PageViewTracker";
@@ -12,9 +13,10 @@ export default async function SiteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [productsById, company] = await Promise.all([
+  const [productsById, company, adminUser] = await Promise.all([
     getProductsById(),
     getCompany(),
+    getAdminUser(),
   ]);
 
   return (
@@ -27,7 +29,7 @@ export default async function SiteLayout({
         >
           Pular para o conteúdo
         </a>
-        <Header />
+        <Header isAdmin={Boolean(adminUser)} />
         <main
           id="conteudo"
           tabIndex={-1}

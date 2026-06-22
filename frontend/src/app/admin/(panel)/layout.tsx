@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { Store } from "lucide-react";
 
 import { getCompany } from "@/server/company";
 import { requireAdmin } from "@/lib/supabase/auth";
@@ -26,10 +27,7 @@ export default async function AdminPanelLayout({
             className="flex items-center gap-2 font-bold"
           >
             <CompanyLogo logoUrl={company.logoUrl} name={company.name} />
-            <span className="hidden sm:inline">
-              Admin{" "}
-              <span className="text-muted-foreground">· {company.name}</span>
-            </span>
+            <span className="hidden sm:inline">{company.name}</span>
           </Link>
 
           <AdminNav />
@@ -37,9 +35,11 @@ export default async function AdminPanelLayout({
           <div className="flex items-center gap-3 text-sm">
             <Link
               href="/"
-              className="text-muted-foreground hover:text-foreground hidden sm:inline"
+              aria-label="Ver site"
+              title="Ver site"
+              className="text-muted-foreground hover:text-foreground hidden items-center sm:inline-flex"
             >
-              Ver site
+              <Store className="size-5" />
             </Link>
             <span className="text-muted-foreground hidden md:inline">
               {admin.email}

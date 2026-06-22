@@ -34,7 +34,7 @@ Rode a partir de `frontend/`:
    - `feat: …` (nova funcionalidade), `fix: …` (correção), `refactor:`, `test:`, `chore:`, `docs:`…
    - Assunto curto no imperativo; se útil, um corpo com bullets do que mudou.
    - Se o usuário passou `$ARGUMENTS`, use como base da mensagem (ajuste para o padrão).
-   - **Não** inclua co-autoria/menções de ferramentas a menos que o usuário peça.
+   - **NUNCA** inclua o Claude (nem qualquer IA/ferramenta) como **co-author** ou **contributor** — sem trailer `Co-authored-by:`, sem `Co-Authored-By: Claude`, sem `Generated with…`/menções a ferramentas. A mensagem fala **só** da mudança. Regra fixa, sem exceção (mesmo que o usuário peça).
 
 ## 4. Push na main (deploy)
 
@@ -48,4 +48,4 @@ Rode a partir de `frontend/`:
 2. Lembre o usuário de conferir o deploy em <https://capim-catalog.vercel.app> (`/`, `/confirmacao`, `/admin/login`).
 3. Se algo que depende do banco falhar em produção, verifique as **env vars na Vercel** (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_EMAILS`) e se as **migrations** pendentes foram aplicadas no Supabase.
 
-> Regra de ouro: **nunca** faça push se um gate falhou. Em dúvida sobre o método de publicação ou o branch, pergunte antes.
+> Regra de ouro: **nunca** faça push se um gate falhou; e **nunca** adicione Claude/IA como co-author ou contributor no commit. Em dúvida sobre o método de publicação ou o branch, pergunte antes.

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Pill, ShoppingCart, Trophy } from "lucide-react";
+import { LayoutDashboard, Pill, ShoppingCart, Trophy } from "lucide-react";
 
 import { useCart } from "@/features/cart/useCart";
 import { useCompany } from "@/features/company/CompanyContext";
@@ -16,7 +16,7 @@ const NAV_LINKS = [
   { href: "/ranking", label: "Ranking", icon: Trophy },
 ] as const;
 
-export function Header() {
+export function Header({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
   const { count } = useCart();
   const company = useCompany();
@@ -56,6 +56,17 @@ export function Header() {
               <span className="hidden sm:inline">{label}</span>
             </Link>
           ))}
+
+          {isAdmin && pathname === "/" && (
+            <Link
+              href="/admin/dashboard"
+              aria-label="Voltar ao admin"
+              title="Voltar ao admin"
+              className="text-primary hover:bg-muted inline-flex items-center rounded-lg px-3 py-1.5 transition-colors"
+            >
+              <LayoutDashboard className="size-4" />
+            </Link>
+          )}
 
           <ThemeToggle />
 
