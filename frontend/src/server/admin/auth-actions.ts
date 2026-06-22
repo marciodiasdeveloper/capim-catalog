@@ -31,7 +31,7 @@ export async function signInAdmin(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return invalid;
 
-  redirect("/admin");
+  redirect("/admin/dashboard");
 }
 
 export async function signOutAdmin(): Promise<void> {

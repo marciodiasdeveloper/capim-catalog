@@ -7,8 +7,10 @@ import { CategoryTabs } from "@/features/catalog/components/CategoryTabs";
 import { SearchBar } from "@/features/catalog/components/SearchBar";
 import { ProductList } from "@/features/catalog/components/ProductList";
 import { RankingBanner } from "@/features/gamification/components/RankingBanner";
+import { useCompany } from "@/features/company/CompanyContext";
 import { CartItemsSection } from "@/features/cart/components/CartItemsSection";
 import { CustomerForm } from "@/features/cart/components/CustomerForm";
+import { MobileSummaryBar } from "@/features/cart/components/MobileSummaryBar";
 import { Container } from "@/components/layout/Container";
 import { SectionTitle } from "@/components/ui/section-title";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,6 +30,7 @@ export function CatalogScreen({
   rankingTop,
   currentRank,
 }: CatalogScreenProps) {
+  const { gamificationEnabled } = useCompany();
   const {
     query,
     setQuery,
@@ -40,9 +43,11 @@ export function CatalogScreen({
 
   return (
     <Container className="space-y-6 py-6">
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-        <RankingBanner top={rankingTop} currentRank={currentRank} />
-      </div>
+      {gamificationEnabled && (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <RankingBanner top={rankingTop} currentRank={currentRank} />
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <div
@@ -84,6 +89,8 @@ export function CatalogScreen({
           </Card>
         </aside>
       </div>
+
+      <MobileSummaryBar />
     </Container>
   );
 }

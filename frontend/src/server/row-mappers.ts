@@ -86,6 +86,7 @@ export function mapCompany(row: CompanySettingsRow): Company {
     whatsapp: row.whatsapp,
     atendente: row.atendente,
     logoUrl: row.logo_url,
+    gamificationEnabled: row.gamification_enabled,
     pix: {
       titular: row.pix_titular,
       chaveTipo: row.pix_chave_tipo,

@@ -7,21 +7,35 @@ import { cn } from "@/lib/utils";
 
 export function AdminNav() {
   const pathname = usePathname();
+  const isDashboard = pathname.startsWith("/admin/dashboard");
   const isPedidos = pathname.startsWith("/admin/pedidos");
   const isClientes = pathname.startsWith("/admin/clientes");
   const isCupons = pathname.startsWith("/admin/cupons");
   const isEmpresa = pathname.startsWith("/admin/empresa");
+  const isConfiguracoes = pathname.startsWith("/admin/configuracoes");
 
   const links = [
+    { href: "/admin/dashboard", label: "Dashboard", active: isDashboard },
     {
       href: "/admin",
       label: "Catálogo",
-      active: !isPedidos && !isClientes && !isCupons && !isEmpresa,
+      active:
+        !isDashboard &&
+        !isPedidos &&
+        !isClientes &&
+        !isCupons &&
+        !isEmpresa &&
+        !isConfiguracoes,
     },
     { href: "/admin/pedidos", label: "Pedidos", active: isPedidos },
     { href: "/admin/clientes", label: "Clientes", active: isClientes },
     { href: "/admin/cupons", label: "Cupons", active: isCupons },
     { href: "/admin/empresa", label: "Empresa", active: isEmpresa },
+    {
+      href: "/admin/configuracoes",
+      label: "Configurações",
+      active: isConfiguracoes,
+    },
   ];
 
   return (

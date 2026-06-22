@@ -75,6 +75,7 @@ async function main() {
     pix_chave: COMPANY.pix.chave,
     pix_banco: COMPANY.pix.banco,
     logo_url: COMPANY.logoUrl ?? null,
+    gamification_enabled: COMPANY.gamificationEnabled,
   });
   if (companyError) throw companyError;
   console.log("✓ company_settings (default) inserido");

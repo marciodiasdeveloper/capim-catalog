@@ -3,6 +3,7 @@ import { getCompany } from "@/server/company";
 import { CartProvider } from "@/features/cart/CartContext";
 import { CompanyProvider } from "@/features/company/CompanyContext";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 
 /** Layout do storefront: carrinho + cabeçalho da loja. */
 export default async function SiteLayout({
@@ -32,6 +33,7 @@ export default async function SiteLayout({
         >
           {children}
         </main>
+        <Footer company={company} />
       </CompanyProvider>
     </CartProvider>
   );

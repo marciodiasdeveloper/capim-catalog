@@ -21,6 +21,11 @@ export function Header() {
   const { count } = useCart();
   const company = useCompany();
 
+  // Esconde o link de Ranking quando a Gamificação está desativada.
+  const navLinks = company.gamificationEnabled
+    ? NAV_LINKS
+    : NAV_LINKS.filter((link) => link.href !== "/ranking");
+
   return (
     <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
       <Container className="flex h-14 items-center justify-between gap-4">
@@ -37,7 +42,7 @@ export function Header() {
         </Link>
 
         <nav className="flex items-center gap-1">
-          {NAV_LINKS.map(({ href, label, icon: Icon }) => (
+          {navLinks.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}

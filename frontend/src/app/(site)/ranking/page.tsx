@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { getCompany } from "@/server/company";
 import { RankingScreen } from "@/screens/RankingScreen";
@@ -10,6 +11,10 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RankingPage() {
+export default async function RankingPage() {
+  // Gamificação desativada: a rota de ranking não existe para o cliente.
+  const company = await getCompany();
+  if (!company.gamificationEnabled) redirect("/");
+
   return <RankingScreen />;
 }

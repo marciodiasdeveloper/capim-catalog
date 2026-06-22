@@ -20,7 +20,10 @@ export default async function AdminPanelLayout({
     <div className="flex min-h-full flex-1 flex-col">
       <header className="border-border bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
         <Container className="flex h-14 items-center justify-between gap-4">
-          <Link href="/admin" className="flex items-center gap-2 font-bold">
+          <Link
+            href="/admin/dashboard"
+            className="flex items-center gap-2 font-bold"
+          >
             <CompanyLogo logoUrl={company.logoUrl} name={company.name} />
             <span className="hidden sm:inline">
               Admin{" "}

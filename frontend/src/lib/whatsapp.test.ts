@@ -1,8 +1,12 @@
 import { describe, it, expect } from "vitest";
 
-import { buildOrderMessage, buildWaLink } from "./whatsapp";
+import {
+  buildOpenOrderWhatsappMessage,
+  buildOrderMessage,
+  buildWaLink,
+} from "./whatsapp";
 import type { Order } from "@/types";
-import type { Company } from "@/data/company";
+import { COMPANY, type Company } from "@/data/company";
 
 const company = {
   name: "Capim Farma",
@@ -148,5 +152,24 @@ describe("buildWaLink", () => {
     expect(link).toBe(
       "https://wa.me/553799447506?text=Ol%C3%A1%20mundo%20%26%20cia"
     );
+  });
+});
+
+describe("buildOpenOrderWhatsappMessage", () => {
+  const msg = buildOpenOrderWhatsappMessage(
+    { number: 1290, customerName: "Maria Silva", total: 125 },
+    COMPANY
+  );
+
+  it("inclui número do pedido, nome do cliente e total formatado", () => {
+    expect(msg).toContain("#1290");
+    expect(msg).toContain("Maria Silva");
+    expect(msg).toContain("125,00");
+  });
+
+  it("inclui os dados do PIX para cobrança", () => {
+    expect(msg).toContain(COMPANY.pix.chave);
+    expect(msg).toContain(COMPANY.pix.titular);
+    expect(msg).toContain("pendente");
   });
 });

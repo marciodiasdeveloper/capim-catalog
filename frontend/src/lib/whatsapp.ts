@@ -58,6 +58,29 @@ export function buildOrderMessage(order: Order, company: Company): string {
   return lines.join("\n");
 }
 
+/**
+ * Mensagem curta de cobrança para um pedido em aberto (pendente), enviada ao
+ * cliente pelo admin a partir do dashboard. Função pura.
+ */
+export function buildOpenOrderWhatsappMessage(
+  order: { number: number; customerName: string; total: number },
+  company: Company
+): string {
+  const lines: string[] = [];
+  lines.push(`Olá, ${order.customerName}! 👋`);
+  lines.push("");
+  lines.push(
+    `Passando para lembrar do seu *Pedido #${order.number}* na ${company.name}, no valor de *${formatBRL(order.total)}*, que está com pagamento pendente.`
+  );
+  lines.push("");
+  lines.push("Para concluir, é só fazer o PIX:");
+  lines.push(`*${company.pix.chaveTipo}:* ${company.pix.chave}`);
+  lines.push(`*Titular:* ${company.pix.titular}`);
+  lines.push("");
+  lines.push("Depois envie o comprovante por aqui. Qualquer dúvida, estou à disposição!");
+  return lines.join("\n");
+}
+
 /** Link de deep-link do WhatsApp. `phoneDigits` deve conter DDI+DDD+número (só dígitos). */
 export function buildWaLink(phoneDigits: string, text: string): string {
   return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(text)}`;

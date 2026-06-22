@@ -277,6 +277,7 @@ export interface Database {
           pix_chave: string;
           pix_banco: string;
           logo_url: string | null;
+          gamification_enabled: boolean;
           updated_at: Ts;
         };
         Insert: {
@@ -290,6 +291,7 @@ export interface Database {
           pix_chave?: string;
           pix_banco?: string;
           logo_url?: string | null;
+          gamification_enabled?: boolean;
           updated_at?: Ts;
         };
         Update: {
@@ -303,6 +305,7 @@ export interface Database {
           pix_chave?: string;
           pix_banco?: string;
           logo_url?: string | null;
+          gamification_enabled?: boolean;
           updated_at?: Ts;
         };
         Relationships: [];

@@ -11,6 +11,8 @@ export interface Company {
   atendente: string;
   /** URL pública do logo (Supabase Storage) ou null se não houver. */
   logoUrl: string | null;
+  /** Chave "Gamificação": exibe ranking e pontos no site. Ativa por padrão. */
+  gamificationEnabled: boolean;
   pix: {
     titular: string;
     chaveTipo: string;
@@ -25,6 +27,7 @@ export const COMPANY: Company = {
   whatsapp: "553799447506",
   atendente: "Equipe Capim",
   logoUrl: null,
+  gamificationEnabled: true,
   pix: {
     titular: "Capim Distribuidora de Medicamentos LTDA",
     chaveTipo: "CNPJ",
