@@ -13,20 +13,13 @@ export function AdminNav() {
   const isCupons = pathname.startsWith("/admin/cupons");
   const isEmpresa = pathname.startsWith("/admin/empresa");
   const isConfiguracoes = pathname.startsWith("/admin/configuracoes");
+  const isCatalogo =
+    pathname.startsWith("/admin/produtos") ||
+    pathname.startsWith("/admin/categorias");
 
   const links = [
     { href: "/admin/dashboard", label: "Dashboard", active: isDashboard },
-    {
-      href: "/admin",
-      label: "Catálogo",
-      active:
-        !isDashboard &&
-        !isPedidos &&
-        !isClientes &&
-        !isCupons &&
-        !isEmpresa &&
-        !isConfiguracoes,
-    },
+    { href: "/admin/produtos", label: "Catálogo", active: isCatalogo },
     { href: "/admin/pedidos", label: "Pedidos", active: isPedidos },
     { href: "/admin/clientes", label: "Clientes", active: isClientes },
     { href: "/admin/cupons", label: "Cupons", active: isCupons },
