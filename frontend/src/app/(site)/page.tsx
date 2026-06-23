@@ -1,6 +1,7 @@
 import { getCategories, getProducts } from "@/server/catalog";
 import { getMonthlyRanking } from "@/server/orders/ranking";
 import { CatalogScreen } from "@/screens/CatalogScreen";
+import { AuroraBackground } from "@/components/layout/AuroraBackground";
 
 export default async function Home() {
   const [categories, products, ranking] = await Promise.all([
@@ -13,11 +14,14 @@ export default async function Home() {
   const currentRank = ranking.find((user) => user.isCurrent) ?? null;
 
   return (
-    <CatalogScreen
-      categories={categories}
-      products={products}
-      rankingTop={rankingTop}
-      currentRank={currentRank}
-    />
+    <>
+      <AuroraBackground />
+      <CatalogScreen
+        categories={categories}
+        products={products}
+        rankingTop={rankingTop}
+        currentRank={currentRank}
+      />
+    </>
   );
 }

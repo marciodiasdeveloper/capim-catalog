@@ -30,7 +30,12 @@ export function ProductList({ groups }: { groups: CategoryGroup[] }) {
           key={category.id}
           className="animate-in fade-in space-y-3 duration-300"
         >
-          <h3 className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+          <h3 className="text-muted-foreground flex items-center gap-2 text-xs font-semibold tracking-widest uppercase">
+            <span
+              aria-hidden
+              className="h-3.5 w-1 shrink-0 rounded-full"
+              style={{ backgroundColor: category.accent }}
+            />
             {category.name}
           </h3>
           <div className="grid gap-3">

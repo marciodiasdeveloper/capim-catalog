@@ -36,19 +36,36 @@ export function CategoryTabs({
       >
         Todos <Count value={totalCount} />
       </Button>
-      {categories.map((category) => (
-        <Button
-          key={category.id}
-          type="button"
-          size="sm"
-          variant={active === category.id ? "default" : "outline"}
-          onClick={() => onChange(category.id)}
-          className="rounded-full px-3.5"
-        >
-          <CategoryIcon icon={category.icon} />
-          {category.name} <Count value={counts[category.id] ?? 0} />
-        </Button>
-      ))}
+      {categories.map((category) => {
+        const isActive = active === category.id;
+        return (
+          <Button
+            key={category.id}
+            type="button"
+            size="sm"
+            variant={isActive ? "default" : "outline"}
+            onClick={() => onChange(category.id)}
+            className="rounded-full px-3.5"
+            style={
+              isActive
+                ? {
+                    backgroundColor: category.accent,
+                    borderColor: category.accent,
+                    color: "#fff",
+                  }
+                : undefined
+            }
+          >
+            <span
+              className="inline-flex items-center"
+              style={isActive ? undefined : { color: category.accent }}
+            >
+              <CategoryIcon icon={category.icon} />
+            </span>
+            {category.name} <Count value={counts[category.id] ?? 0} />
+          </Button>
+        );
+      })}
     </div>
   );
 }

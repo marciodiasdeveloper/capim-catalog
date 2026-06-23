@@ -6,6 +6,7 @@ import { useCatalogFilters } from "@/features/catalog/hooks/useCatalogFilters";
 import { CategoryTabs } from "@/features/catalog/components/CategoryTabs";
 import { SearchBar } from "@/features/catalog/components/SearchBar";
 import { ProductList } from "@/features/catalog/components/ProductList";
+import { CatalogHero } from "@/features/catalog/components/CatalogHero";
 import { RankingBanner } from "@/features/gamification/components/RankingBanner";
 import { useCompany } from "@/features/company/CompanyContext";
 import { CartItemsSection } from "@/features/cart/components/CartItemsSection";
@@ -43,8 +44,15 @@ export function CatalogScreen({
 
   return (
     <Container className="space-y-6 py-6">
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <CatalogHero />
+      </div>
+
       {gamificationEnabled && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <div
+          className="animate-in fade-in slide-in-from-bottom-2 duration-500"
+          style={{ animationDelay: "50ms", animationFillMode: "both" }}
+        >
           <RankingBanner top={rankingTop} currentRank={currentRank} />
         </div>
       )}
@@ -80,7 +88,7 @@ export function CatalogScreen({
           className="animate-in fade-in slide-in-from-bottom-2 min-w-0 duration-500 lg:sticky lg:top-20 lg:flex lg:flex-col lg:max-h-[calc(100dvh-6rem)]"
           style={{ animationDelay: "150ms", animationFillMode: "both" }}
         >
-          <Card className="lg:min-h-0">
+          <Card className="shadow-sm lg:min-h-0">
             <CardContent className="space-y-4 lg:flex-1 lg:min-h-0 lg:overflow-y-auto scrollbar-thin">
               <CartItemsSection />
               <Separator />

@@ -1,19 +1,13 @@
 import Link from "next/link";
-import {
-  ChevronRight,
-  MessageCircle,
-  QrCode,
-  Trophy,
-  Truck,
-} from "lucide-react";
+import { ChevronRight, MessageCircle } from "lucide-react";
 
 import type { Company } from "@/data/company";
-import { FRETE_GRATIS_ACIMA } from "@/constants";
-import { formatBRL, formatPhone } from "@/lib/format";
+import { formatPhone } from "@/lib/format";
 import { buildWaLink } from "@/lib/whatsapp";
 import { buttonVariants } from "@/components/ui/button";
 import { Container } from "./Container";
 import { CompanyLogo } from "./CompanyLogo";
+import { getHighlights } from "./highlights";
 import { cn } from "@/lib/utils";
 
 const WA_GREETING = "Olá! Vim pelo catálogo e gostaria de fazer um pedido.";
@@ -31,18 +25,7 @@ export function Footer({ company }: { company: Company }) {
   const phoneLabel = `+55 ${formatPhone(company.whatsapp.replace(/^55/, ""))}`;
 
   // Esconde as superfícies de gamificação quando a chave está desativada.
-  const highlights = [
-    {
-      icon: Truck,
-      title: "Frete grátis",
-      desc: `acima de ${formatBRL(FRETE_GRATIS_ACIMA)}`,
-    },
-    { icon: QrCode, title: "Pague com PIX", desc: "rápido e sem taxas" },
-    { icon: MessageCircle, title: "Atendimento humano", desc: "pelo WhatsApp" },
-    ...(company.gamificationEnabled
-      ? [{ icon: Trophy, title: "Ranking do mês", desc: "pontos a cada pedido" }]
-      : []),
-  ];
+  const highlights = getHighlights(company);
 
   const navLinks = company.gamificationEnabled
     ? NAV_LINKS

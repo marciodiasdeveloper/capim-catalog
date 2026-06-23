@@ -50,6 +50,40 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Drift lento dos blobs do fundo decorativo (AuroraBackground). */
+  --animate-aurora-1: aurora-1 24s ease-in-out infinite;
+  --animate-aurora-2: aurora-2 30s ease-in-out infinite;
+  --animate-aurora-3: aurora-3 27s ease-in-out infinite;
+}
+
+@keyframes aurora-1 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6%, 8%, 0) scale(1.15);
+  }
+}
+
+@keyframes aurora-2 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(-8%, 6%, 0) scale(0.95);
+  }
+}
+
+@keyframes aurora-3 {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(5%, -7%, 0) scale(1.1);
+  }
 }
 
 :root {

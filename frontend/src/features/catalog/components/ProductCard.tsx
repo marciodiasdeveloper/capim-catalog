@@ -49,7 +49,7 @@ export const ProductCard = memo(function ProductCard({
   return (
     <Card
       size="sm"
-      className="transition hover:-translate-y-0.5 hover:ring-foreground/20"
+      className="shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:ring-foreground/20"
     >
       <CardContent className="flex items-start gap-3">
         <ProductThumb category={category} />
